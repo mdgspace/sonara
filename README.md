@@ -227,6 +227,59 @@ A WAV file consists of the following chunks:
     - Subchunk2Size: NumSamples * NumChannels * BitsPerSample/8 (4 byets)
     - Data: Raw audio sample data (PCM encoded)
 
+A generatlized struct for PCM data can be:
+```cpp
+struct WAVHeader {
+    char riff[4] = {'R','I','F','F'};
+    uint32_t chunkSize;
+    char wave[4] = {'W','A','V','E'};
+
+    char fmt[4] = {'f','m','t',' '};
+    uint32_t subchunk1Size = 16; // PCM
+    uint16_t audioFormat = 1;    // PCM format
+    uint16_t numChannels;
+    uint32_t sampleRate;
+    uint32_t byteRate;
+    uint16_t blockAlign;
+    uint16_t bitsPerSample;
+
+    char data[4] = {'d','a','t','a'};
+    uint32_t subchunk2Size;
+};
+```
+
+We can now define a C++ function that can generate this WAV file from a vector int16_t input:
+
+```cpp
+void writeWAV(const std::string& filename,
+              const std::vector<int16_t>& pcmData,
+              uint16_t numChannels,
+              uint32_t sampleRate,
+              uint16_t bitsPerSample) {
+
+    WAVHeader header;
+    header.numChannels = numChannels;
+    header.sampleRate = sampleRate;
+    header.bitsPerSample = bitsPerSample;
+    header.blockAlign = numChannels * bitsPerSample / 8;
+    header.byteRate = sampleRate * header.blockAlign;
+    header.subchunk2Size = pcmData.size() * sizeof(int16_t);
+    header.chunkSize = 36 + header.subchunk2Size;
+
+    std::ofstream file(filename, std::ios::binary);
+    if (!file) {
+        std::cerr << "Cannot open file";
+        return;
+    }
+
+    file.write(reinterpret_cast<const char*>(&header), sizeof(WAVHeader));
+
+    file.write(reinterpret_cast<const char*>(pcmData.data()), pcmData.size() * sizeof(int16_t));
+
+    file.close();
+}
+```
+
 ## JS Blob
 
 ## Integer Data Types
