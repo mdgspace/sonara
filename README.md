@@ -125,6 +125,8 @@ Compression evens out the volume of audio, making loud parts quieter and quiet p
 - **Makeup Gain:** Boosts the compressed signal to match original loudness.
 - **Sidechain/Filter:** Some compressors can respond only to certain frequencies.
 
+---
+
 | Effect      | Use                        | Key Controls/Parameters           | Other Notes                      |
 | ----------- | -------------------------- | --------------------------------- | -------------------------------- |
 | **Delay**       | Echoes, rhythm, space      | Time, Feedback, Mix, Mod, Filter  | Haas effect for widening         |
@@ -136,11 +138,105 @@ Compression evens out the volume of audio, making loud parts quieter and quiet p
 | **Compression** | Control, punch, smoothness | Threshold, Ratio, Attack, Release | Parallel, sidechain, makeup gain |
 | **EQ**          | Tone shaping, clarity      | Freq, Gain, Q, Type               | Corrective & creative uses       |
 
+---
 
-# Development Notes
+# Developer Notes
 
 The following are detailed notes that describe and document technologies used to build web-audio-sythesizer.
 
 ## Pulse-Code Modulation (PCM)
 
+Pulse-Code Modulation (PCM) is a method used to digitally represent analog signals. It is the standard form for digital audio in computers, CDs, DVDs, and other digital audio applications.
+
+PCM converts a continuous-time, continuous-amplitude analog signal into a discrete-time, discrete-amplitude digital signal by sampling and quantization.
+
+2. Quantization: Approximating each sampled amplitude to the nearest value from a finite set of discrete amplitude levels.
+3. Encoding: Representing each quantized value as a binary number.
+
+### Sampling
+Measuring the amplitude of the continuous signal at regular time intervals.
+A continuous time signal $x(t)$ is represented in descrete time as: $x[n]=x(nT_s)$
+
+To avoid loss of information, the sampling frequency must be at least twice the maximum frequency present in the signal: $f_s \ge 2f_{max}$
+
+### Quantization
+Approximating each sampled amplitude to the nearest value from a finite set of discrete amplitude levels.
+
+For a signal within the amplitude range $[x_{min}, x_{max}]$, we divide the range into $L=2^B$ quantization levels, where B is the number of bits per sample.
+
+Quantization interval (step size): $\Delta =\dfrac{x_{max}- x_{min}}{L}$
+
+Let $\hat x[n]$ be the quantized signal, we know
+
+$\hat x[n] = x_{min} + \Delta \times Math.round\bigg(\dfrac{x[n]-x_{min}}{\Delta}\bigg)$
+
+### Encoding
+Each quantized value in $\hat x[n]$ can be represented as a B bit binary digit.
+
+### C++ Code Example:
+
+```cpp
+#include <vector>
+#include <cmath>
+#include <cstdint>
+
+std::vector<int16_t> generatePCM(
+    double frequency,
+    double duration,
+    int sampleRate,
+    double amplitude = 1.0
+) {
+    const int numSamples = static_cast<int>(duration * sampleRate);
+    std::vector<int16_t> pcmData(numSamples);
+
+    const double maxAmplitude = 32767.0 * amplitude;
+
+    for (int i = 0; i < numSamples; ++i) {
+        double t = static_cast<double>(i) / sampleRate;
+        double sample = maxAmplitude * sin(2.0 * M_PI * frequency * t);
+        pcmData[i] = static_cast<int16_t>(std::round(sample));
+    }
+
+    return pcmData;
+}
+```
+Note to use the function:
+- double frequency represents the freqeuncy of the wave to be modulated
+- double duration is the duration of the wav in seconds
+- int sampleRate is the sampling frequency which should obey Nyquist law
+- double amplitude is between 0 to 1 and represents normalized amplitude
+
 ## Waveform Audio File Format
+
+A WAV file consists of the following chunks:
+- RIFF Header Chunk (12 bytes)
+    - ChunkID: ASCII "RIFF" (4 bytes)
+    - ChunkSize: Size of data (4 bytes)
+    - Format: ASCII "WAVE" (4 bytes)
+- fmt Subchunk (16 bytes)
+    - Subchunk1ID: ASCII "fmt" (4 bytes)
+    - Subchunk1Size: Size of this subchunk - 16 (4 bytes)
+    - AudioFormat: code 1 for PCM uncompressed (2 bytes)
+    - NumChannels: Number of audio channels - 1 for mono 2 for stereo (2 bytes)
+    - SampleRate: Sampling rate (4 bytes)
+    - ByteRate: SampleRate * NumChannels * BitsPerSample/8 (4 bytes)
+    - BlockAlign: NumChannels * BitsPerSample/8 (2 bytes)
+    - BitsPerSample: Bits in one sample (2 bytes)
+- data Subchunk (variable size)
+    - Subchunk2ID: ASCII "data" (4 bytes)
+    - Subchunk2Size: NumSamples * NumChannels * BitsPerSample/8 (4 byets)
+    - Data: Raw audio sample data (PCM encoded)
+
+## JS Blob
+
+## Integer Data Types
+
+Singed integer types (int) can be negative, positive or zero, whereas unsigned integer types (uint) are always non-negative.
+
+Unsigned integer of the same size as signed integer can store upto double the maximum value that signed can store.
+
+The "_t" keyword is used to indicate that the variable has a fixed size and the size cannot be compromised.
+
+Examples: int8, int16, int32, int64, uint8, uint16, uint32, uint64
+
+We use integer array classes to store stream of integers like Int8Array, Int32Array or Uint16Array.
