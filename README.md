@@ -125,8 +125,6 @@ Compression evens out the volume of audio, making loud parts quieter and quiet p
 - **Makeup Gain:** Boosts the compressed signal to match original loudness.
 - **Sidechain/Filter:** Some compressors can respond only to certain frequencies.
 
-## Summary Table
-
 | Effect      | Use                        | Key Controls/Parameters           | Other Notes                      |
 | ----------- | -------------------------- | --------------------------------- | -------------------------------- |
 | **Delay**       | Echoes, rhythm, space      | Time, Feedback, Mix, Mod, Filter  | Haas effect for widening         |
