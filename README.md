@@ -341,10 +341,10 @@ This command creates a .wasm file with a JS glue code which gives us access to t
 
 We can access modules of cpp from javascript by adding the js glue code as script and then using Modules:
 ```html
-<script src="[glue-code].js"></script>
+<script src="add.js"></script>
 <script>
     Module.onRuntimeInitialized = function() {
-      Module._ExportFunction();
+      var sum = Module._add(5, 10);
     };
 </script>
 ```
