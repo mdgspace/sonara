@@ -311,6 +311,29 @@ link.textContent = "Download WAV";
 document.body.appendChild(link);
 ```
 
+## Using Web Assembly
+
+We first create a .cpp file with function to export marked as "extern":
+```cpp
+extern "C" {
+	int add(int a, int b) {
+		return a+b;
+	}
+}
+```
+
+To convert it to wasm, we will need to install EmScripten first (Make sure to have installed git and python before):
+
+```
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+git pull
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+```
+
+
 ## Integer Data Types
 
 Singed integer types (int) can be negative, positive or zero, whereas unsigned integer types (uint) are always non-negative.
