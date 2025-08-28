@@ -248,7 +248,7 @@ struct WAVHeader {
 };
 ```
 
-We can now define a C++ function that can generate this WAV file from a vector int16_t input:
+We can now define a C++ function that can generate this WAV file from a vector int16_t input (This might be required only in the backend, for frontend web assembly, we will use JS Blob):
 
 ```cpp
 void writeWAV(const std::string& filename,
@@ -280,7 +280,36 @@ void writeWAV(const std::string& filename,
 }
 ```
 
-## JS Blob
+## Binary Large Object in Javascript
+
+Binary Large Object in Javascript, also called a JS Blob is an object for storing, manipulating, and transferring raw binary data.
+
+We can create a Blob for our WAV in javascript and then create a URL to access it from browser:
+
+```js
+const wavBlob = new Blob([wavBytes], { type: "audio/wav" });
+const wavUrl = URL.createObjectURL(wavBlob);
+```
+
+Then we can make an audio object to play the sound:
+
+```js
+const audio = document.createElement('audio');
+audio.src = wavUrl;
+audio.controls = true;
+document.body.appendChild(audio);
+audio.play();
+```
+
+We can also create a href link to download the WAV file:
+
+```js
+const link = document.createElement('a');
+link.href = wavUrl;
+link.download = "generated.wav";
+link.textContent = "Download WAV";
+document.body.appendChild(link);
+```
 
 ## Integer Data Types
 
