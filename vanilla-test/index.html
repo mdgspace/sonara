@@ -1,0 +1,13 @@
+<html>
+<head><title>WebAssembly Add</title></head>
+<body>
+  <div id="result"></div>
+  <script src="add.js"></script>
+  <script>
+    Module.onRuntimeInitialized = function() {
+      var sum = Module._add(5, 10);
+      document.getElementById('result').textContent = "5 + 10 = " + sum;
+    };
+  </script>
+</body>
+</html>
