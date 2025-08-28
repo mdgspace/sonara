@@ -333,6 +333,22 @@ git pull
 source ./emsdk_env.sh
 ```
 
+Now to make a WASM file, we run: 
+```
+emcc add.cpp -o add.js -s EXPORTED_FUNCTIONS="['_add']"
+```
+This command creates a .wasm file with a JS glue code which gives us access to the functions in CPP specified in the EXPORTED_FUNCTIONS parameter.
+
+We can access modules of cpp from javascript by adding the js glue code as script and then using Modules:
+```html
+<script src="[glue-code].js"></script>
+<script>
+    Module.onRuntimeInitialized = function() {
+      Module._ExportFunction();
+    };
+</script>
+```
+
 
 ## Integer Data Types
 
