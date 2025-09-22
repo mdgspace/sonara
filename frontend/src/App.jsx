@@ -14,11 +14,11 @@ import {
   createTheme,
   ThemeProvider,
 } from '@mui/material';
-import '../components/graph_line.jsx';
-import '../components/input_fields.jsx';
+import './components/graph_line.jsx';
+import './components/input_fields.jsx';
 import './App.css';
-import BasicLineChart from '../components/graph_line.jsx';
-import H_Slider from '../components/input_fields.jsx';
+import BasicLineChart from './components/graph_line.jsx';
+import H_Slider from './components/input_fields.jsx';
 
 const darkTheme = createTheme({
   palette: {
@@ -49,10 +49,12 @@ function App() {
   const x_data = [1, 3, 7, 11, 12, 15];
   const y_data = [2, 3, 4, 5, 6, 7];
   const n = x_data.length;
-  const base_arr = Array(n).fill(1);
+  // const base_arr = Array(n).fill(1);
   const [waveType, setWaveType] = useState('sine');
   const [frequency, setFrequency] = useState(440);
-  const [error, setError] = useState(false);
+  const [duration, setDuration] = useState(1);
+  const [freqError, setFreqError] = useState(false);
+  const [durationError, setDurationError] = useState(false);
   const [filter, setFilter] = useState(false);
   const [filterData, setFilterData] = useState(Array(n).fill(1));
   const [xOffset, setXOffset] = useState(0);
@@ -80,8 +82,15 @@ function App() {
   const checkFreq = (e) => {
     const value = Number(e.target.value);
     const bool = (value >= 2 && value <= 20000);
-    setError(!bool);
+    setFreqError(!bool);
     setFrequency(Math.max(20, Math.min(value, 20000)));
+  }
+
+  const checkTime = (e) => {
+    const value = Number(e.target.value);
+    const bool = (value >= 1 && value <= 100);
+    setDurationError(!bool);
+    setDuration(Math.max(1, Math.min(value, 100)));
   }
 
   const handleGenerate = () => {
@@ -129,13 +138,26 @@ function App() {
 
             <Box sx={{ mt: 3, mb: 3 }}>
               <TextField
-                error={error}
-                helperText={error ? 'Frequency must be between 2 and 20000 Hz' : ''}
+                error={freqError}
+                helperText={freqError ? 'Frequency must be between 2 and 20000 Hz' : ''}
                 fullWidth
                 label="Base Frequency (Hz)"
                 type="number"
                 value={frequency}
                 onChange={(e) => checkFreq(e)}
+                variant="outlined"
+              />
+            </Box>
+
+            <Box sx={{ mt: 3, mb: 3 }}>
+              <TextField
+                error={durationError}
+                helperText={durationError ? 'Duration must be between 1 and 100 sec' : ''}
+                fullWidth
+                label="Duration (sec)"
+                type="number"
+                value={duration}
+                onChange={(e) => checkTime(e)}
                 variant="outlined"
               />
             </Box>
