@@ -15,7 +15,7 @@ const double PI = 3.14159265358979323846;
  * @param duration The duration of the audio to be generated in seconds.
  * @return A std::vector<int16_t> containing the generated PCM audio data.
  */
-std::vector<int16_t> generatePcmData(const std::vector<std::vector<double>>& freqAmpPairs, int sampleRate, double duration) {
+std::vector<int16_t> generatePcmData(const std::vector<std::vector<double>>& freqAmpPairs, int sampleRate, int duration) {
     // Convert the JavaScript array of arrays to a C++ vector of pairs
     // const std::vector<std::vector<double>> pairs = emscripten::vecFromJSArray<std::vector<double>>(freqAmpPairs);
 

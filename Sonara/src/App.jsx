@@ -69,11 +69,15 @@ function App() {
         // const sampleRate = audioContextRef.current.sampleRate;
         const sampleRate = 44100;
         const duration = 1.0; // 1 second duration
-        const freqAmpPairs = [[500, 1]]; // 500Hz sine wave with amplitude 1
+        const pairs = new wasmModule.VectorDouble();
+        pairs.push_back(500);
+        pairs.push_back(1);
+        const freqAmpPairs=  new wasmModule.VectorVectorDouble();
+        freqAmpPairs.push_back(pairs);
 
         // 1. Generate PCM data from WASM
         const pcmDataVector = wasmModule.generatePcmData(freqAmpPairs, sampleRate, duration);
-        alert(`pcmDataVector: ${JSON.stringify(pcmDataVector)}`);
+        // alert(`pcmDataVector: ${JSON.stringify(pcmDataVector)}`);
         const pcmData = new Int16Array(pcmDataVector.size());
         for (let i = 0; i < pcmDataVector.size(); i++) {
             pcmData[i] = pcmDataVector.get(i);
