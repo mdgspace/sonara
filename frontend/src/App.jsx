@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  AppBar, Toolbar, Typography, FormGroup, FormControlLabel, Checkbox, Slider,
-  Container,
+  AppBar, Toolbar, Typography, FormGroup, FormControlLabel, Checkbox,
+  Container, ButtonGroup,
   Paper,
   Box,
   FormControl,
@@ -47,14 +47,13 @@ const darkTheme = createTheme({
 
 function App() {
   const x_data = [1, 3, 7, 11, 12, 15];
-  const y_data = [2, 3, 4, 5, 6, 7];
+  const [ydata,setYdata] = useState({history:[[2, 3, 4, 5, 6, 7]], current:0});
   const n = x_data.length;
-  // const base_arr = Array(n).fill(1);
   const [waveType, setWaveType] = useState('sine');
-  const [frequency, setFrequency] = useState(440);
   const [duration, setDuration] = useState(1);
   const [freqError, setFreqError] = useState(false);
   const [durationError, setDurationError] = useState(false);
+  const [frequency, setFrequency] = useState(440);
   const [filter, setFilter] = useState(false);
   const [filterData, setFilterData] = useState(Array(n).fill(1));
   const [xOffset, setXOffset] = useState(0);
@@ -92,7 +91,24 @@ function App() {
     setDurationError(!bool);
     setDuration(Math.max(1, Math.min(value, 100)));
   }
+  
+  const applyFilter = () => {
+    if (filter){
+      const arr = []; const history = ydata.history; var current = ydata.current;
+    for (let i = 0; i < n; i++) {
+      arr[i] = filterData[i] * history[current][i];
+    }
+    history.push(arr); current +=1; 
+    setYdata({history:history, current:current});
+    setFilter(!filter);
+  } else{pass}
+}
 
+  const revert = () => {
+    const current = ydata.current;
+    if (current>0){setYdata({history: ydata.history.slice(0, ydata.current), current: (ydata.current - 1)});}
+    else{pass}
+  }
   const handleGenerate = () => {
     console.log(`Generating a ${waveType} wave at ${frequency} Hz`);
   };
@@ -148,9 +164,8 @@ function App() {
                 variant="outlined"
               />
             </Box>
-
-            <Box sx={{ mt: 3, mb: 3 }}>
-              <TextField
+             <Box sx={{ mt: 3, mb: 3 }}>
+               <TextField
                 error={durationError}
                 helperText={durationError ? 'Duration must be between 1 and 100 sec' : ''}
                 fullWidth
@@ -161,7 +176,6 @@ function App() {
                 variant="outlined"
               />
             </Box>
-
             <Button
               variant="contained"
               color="primary"
@@ -176,12 +190,21 @@ function App() {
         </Container>
 
         <Box sx={{ display: 'flex', gap: 10, flexDirection: 'column', flex: 1, mt: 4 }}>
-          <BasicLineChart x_data={x_data} y_data={y_data} filter={filter} filter_data={filterData} sx={{ flex: 1 }} />
+          <BasicLineChart x_data={x_data} y_data={ydata.history[ydata.current]} filter={filter} filter_data={filterData} sx={{ flex: 1 }} />
           <FormGroup sx={{ flex: 1, alignContent: 'center' }}>
-            <FormControlLabel control={<Checkbox />} label="Add Filter" onClick={() => setFilter(!filter)} />
-            <FormControlLabel control={<Checkbox />} label="Apply Filter" />
+            <FormControlLabel control={<Checkbox />} label="Add Filter" checked={filter} onClick={() => setFilter(!filter)} />
+            {/* <FormControlLabel control={<Checkbox />} label="Apply Filter" checked={filter} onClick={applyFilter} /> */}
           </FormGroup>
-          <Box sx={{ flex: 1, alignContent: 'center', p: 8 }}>
+
+
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 2 }}>
+            <ButtonGroup variant="contained" aria-label="Basic button group">
+              <Button color="secondary" onClick={revert}>Revert</Button>
+              <Button color="success" onClick={applyFilter}>Apply Filter</Button>
+            </ButtonGroup>
+          </Box>
+
+          <Box sx={{ flex: 1, justifyContent: 'center', p: 8 }}>
             <H_Slider name="X Offset" func={(e, value) => setXOffset(value)} />
             <H_Slider name="Y Offset" func={(e, value) => setYOffset(value)} />
             <H_Slider name="Amplitude" func={(e, value) => setAmplitude(value)} />
