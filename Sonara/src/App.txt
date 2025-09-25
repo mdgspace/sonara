@@ -1,0 +1,18 @@
+import { useEffect } from "react";
+
+function App() {
+  useEffect(() => {
+    (async () => {
+      // available globally because of <script src="/add.js">
+      const wasm = await window.createAddModule({
+        locateFile: (path) => "/add.wasm",
+      });
+
+      console.log("add(2, 3) =", wasm._add(2, 3));
+    })();
+  }, []);
+
+  return <div>Check console</div>;
+}
+
+export default App;
