@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
+import { applyShape } from '../utils';
 
 const style = {
     backgroundColor: "#000000",
@@ -9,7 +10,7 @@ const style = {
     connectorWidth: 2,
     nodeRadius: 5,
     hitRadius: 5,
-    cSpeed: 1.5
+    shapeSpeed: 0.1 // How much to change the shape on each scroll tick
 };
 
 const useCanvasDrawing = (canvasRef, { width, height, nodes, xRange, curves }) => {
@@ -37,7 +38,7 @@ const useCanvasDrawing = (canvasRef, { width, height, nodes, xRange, curves }) =
             for (let i = 0; i < nodes.length - 1; i++) {
                 const startNode = nodes[i];
                 const endNode = nodes[i+1];
-                const c = curves[i] !== undefined ? curves[i] : 1; // Default to 1 (straight line)
+                const shape = curves[i] !== undefined ? curves[i] : 0; // Default to 0 (straight line)
 
                 const startPoint = getCanvasPoint(startNode);
                 const endPoint = getCanvasPoint(endNode);
@@ -49,8 +50,8 @@ const useCanvasDrawing = (canvasRef, { width, height, nodes, xRange, curves }) =
                 for (let j = 1; j <= segments; j++) {
                     const t = j / segments; // Normalized x-position (0 to 1) between nodes
 
-                    // Equation: y = start + (end - start) * t^c
-                    const curvedT = Math.pow(t, c);
+                    // Apply the new shaping function
+                    const curvedT = applyShape(t, shape);
                     const currentX = startPoint.x + t * (endPoint.x - startPoint.x);
                     const currentY = startPoint.y + curvedT * (endPoint.y - startPoint.y);
                     context.lineTo(currentX, currentY);
@@ -73,8 +74,6 @@ const useCanvasDrawing = (canvasRef, { width, height, nodes, xRange, curves }) =
 
 const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, curves, onNodesChange, onCurvesChange }) => {
     const [draggingNodeIndex, setDraggingNodeIndex] = useState(null);
-
-    // Memoize helper functions to avoid re-creation on every render
     const getMousePos = useCallback((e) => {
         const rect = canvasRef.current.getBoundingClientRect();
         return {
@@ -136,27 +135,16 @@ const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, curves,
         e.preventDefault();
         const mousePos = getMousePos(e);
         const logicalX = (mousePos.x / width) * (xRange[1] - xRange[0]) + xRange[0];
-
         const targetConnectorIndex = nodes.findIndex((node, i) =>
             nodes[i + 1] && logicalX > node.x && logicalX < nodes[i + 1].x
         );
-
         if (targetConnectorIndex === -1) return;
+        const currentShape = curves[targetConnectorIndex];
+        const scrollDirection = -Math.sign(e.deltaY);
+        const shapeChange = scrollDirection * style.shapeSpeed;
+        const newShape = Math.max(-1, Math.min(1, currentShape + shapeChange));
 
-        const startNode = nodes[targetConnectorIndex];
-        const endNode = nodes[targetConnectorIndex + 1];
-        const isScrollingUp = e.deltaY < 0;
-        const currentC = curves[targetConnectorIndex];
-
-        let newC;
-        if (startNode.y > endNode.y) {
-            newC = isScrollingUp ? currentC * 1+(style.cSpeed)*0.1 : currentC * 1-(style.cSpeed)*0.05;
-        } else {
-            newC = isScrollingUp ? currentC * 1-(style.cSpeed)*0.05 : currentC * 1+(style.cSpeed)*0.1;
-        }
-
-        const clampedC = Math.max(0.01, newC);
-        onCurvesChange(curves.map((c, i) => i === targetConnectorIndex ? clampedC : c));
+        onCurvesChange(curves.map((shape, i) => i === targetConnectorIndex ? newShape : shape));
     }, [getMousePos, width, xRange, nodes, curves, onCurvesChange]);
 
     return { handleMouseDown, handleMouseMove, handleMouseUp, handleWheel };
