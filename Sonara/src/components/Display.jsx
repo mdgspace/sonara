@@ -1,0 +1,185 @@
+import { useRef, useEffect, useState, useCallback } from 'react';
+
+const style = {
+    backgroundColor: "#000000",
+    borderColor: "#FFFFFF",
+    borderWidth: 1,
+    nodeColor: "#FFFFFF",
+    connectorColor: "#FFFFFF",
+    connectorWidth: 2,
+    nodeRadius: 5,
+    hitRadius: 5,
+    cSpeed: 1.5
+};
+
+const useCanvasDrawing = (canvasRef, { width, height, nodes, xRange, curves }) => {
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        const context = canvas.getContext('2d');
+
+        // Helper to convert node coordinates to canvas coordinates
+        const getCanvasPoint = (node) => {
+            const canvasX = ((node.x - xRange[0]) / (xRange[1] - xRange[0])) * width;
+            const canvasY = node.y * height;
+            return { x: canvasX, y: canvasY };
+        };
+
+        // Clear canvas and draw background
+        context.fillStyle = style.backgroundColor;
+        context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+
+        // Draw connectors (curves) between consecutive nodes
+        if (nodes.length > 1) {
+            context.strokeStyle = style.connectorColor;
+            context.lineWidth = style.connectorWidth;
+            context.beginPath();
+
+            for (let i = 0; i < nodes.length - 1; i++) {
+                const startNode = nodes[i];
+                const endNode = nodes[i+1];
+                const c = curves[i] !== undefined ? curves[i] : 1; // Default to 1 (straight line)
+
+                const startPoint = getCanvasPoint(startNode);
+                const endPoint = getCanvasPoint(endNode);
+
+                context.moveTo(startPoint.x, startPoint.y);
+
+                // Approximate the curve with many small line segments
+                const segments = 100; // Increase for a smoother curve
+                for (let j = 1; j <= segments; j++) {
+                    const t = j / segments; // Normalized x-position (0 to 1) between nodes
+
+                    // Equation: y = start + (end - start) * t^c
+                    const curvedT = Math.pow(t, c);
+                    const currentX = startPoint.x + t * (endPoint.x - startPoint.x);
+                    const currentY = startPoint.y + curvedT * (endPoint.y - startPoint.y);
+                    context.lineTo(currentX, currentY);
+                }
+            }
+            context.stroke();
+        }
+
+        // Draw nodes on top of the lines
+        context.fillStyle = style.nodeColor;
+        nodes.forEach(node => {
+            const { x, y } = getCanvasPoint(node);
+            context.beginPath();
+            context.arc(x, y, style.nodeRadius, 0, 2 * Math.PI);
+            context.fill();
+        });
+    }, [canvasRef, width, height, nodes, xRange, curves]);
+};
+
+
+const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, curves, onNodesChange, onCurvesChange }) => {
+    const [draggingNodeIndex, setDraggingNodeIndex] = useState(null);
+
+    // Memoize helper functions to avoid re-creation on every render
+    const getMousePos = useCallback((e) => {
+        const rect = canvasRef.current.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top,
+        };
+    }, [canvasRef]);
+
+    const getCanvasPoint = useCallback((node) => {
+        const canvasX = ((node.x - xRange[0]) / (xRange[1] - xRange[0])) * width;
+        const canvasY = node.y * height;
+        return { x: canvasX, y: canvasY };
+    }, [width, height, xRange]);
+
+    const handleMouseDown = useCallback((e) => {
+        const mousePos = getMousePos(e);
+        for (let i = 0; i < nodes.length; i++) {
+            const { x: canvasX, y: canvasY } = getCanvasPoint(nodes[i]);
+            const distance = Math.sqrt(Math.pow(mousePos.x - canvasX, 2) + Math.pow(mousePos.y - canvasY, 2));
+            if (distance < style.nodeRadius + style.hitRadius) {
+                setDraggingNodeIndex(i);
+                return;
+            }
+        }
+    }, [getMousePos, getCanvasPoint, nodes]);
+
+    const handleMouseMove = useCallback((e) => {
+        if (draggingNodeIndex === null) return;
+
+        const mousePos = getMousePos(e);
+        const clampedCanvasY = Math.max(0, Math.min(height, mousePos.y));
+        const normalizedY = clampedCanvasY / height;
+
+        let newNodeX;
+        const isFirstNode = draggingNodeIndex === 0;
+        const isLastNode = draggingNodeIndex === nodes.length - 1;
+
+        if (isFirstNode || isLastNode) {
+            newNodeX = nodes[draggingNodeIndex].x;
+        } else {
+            const leftNeighborX = nodes[draggingNodeIndex - 1].x;
+            const rightNeighborX = nodes[draggingNodeIndex + 1].x;
+            const rawNodeX = (mousePos.x / width) * (xRange[1] - xRange[0]) + xRange[0];
+            newNodeX = Math.max(leftNeighborX, Math.min(rawNodeX, rightNeighborX));
+        }
+
+        const newNodes = nodes.map((node, index) =>
+            index === draggingNodeIndex ? { x: newNodeX, y: normalizedY } : node
+        );
+
+        onNodesChange(newNodes);
+    }, [draggingNodeIndex, getMousePos, height, width, nodes, xRange, onNodesChange]);
+
+    const handleMouseUp = useCallback(() => {
+        setDraggingNodeIndex(null);
+    }, []);
+
+    const handleWheel = useCallback((e) => {
+        e.preventDefault();
+        const mousePos = getMousePos(e);
+        const logicalX = (mousePos.x / width) * (xRange[1] - xRange[0]) + xRange[0];
+
+        const targetConnectorIndex = nodes.findIndex((node, i) =>
+            nodes[i + 1] && logicalX > node.x && logicalX < nodes[i + 1].x
+        );
+
+        if (targetConnectorIndex === -1) return;
+
+        const startNode = nodes[targetConnectorIndex];
+        const endNode = nodes[targetConnectorIndex + 1];
+        const isScrollingUp = e.deltaY < 0;
+        const currentC = curves[targetConnectorIndex];
+
+        let newC;
+        if (startNode.y > endNode.y) {
+            newC = isScrollingUp ? currentC * 1+(style.cSpeed)*0.1 : currentC * 1-(style.cSpeed)*0.05;
+        } else {
+            newC = isScrollingUp ? currentC * 1-(style.cSpeed)*0.05 : currentC * 1+(style.cSpeed)*0.1;
+        }
+
+        const clampedC = Math.max(0.01, newC);
+        onCurvesChange(curves.map((c, i) => i === targetConnectorIndex ? clampedC : c));
+    }, [getMousePos, width, xRange, nodes, curves, onCurvesChange]);
+
+    return { handleMouseDown, handleMouseMove, handleMouseUp, handleWheel };
+};
+
+function Display(props) {
+    const canvasRef = useRef(null);
+    useCanvasDrawing(canvasRef, props);
+    const eventHandlers = useCanvasInteraction(canvasRef, props);
+
+    return (
+        <canvas
+            ref={canvasRef}
+            width={props.width}
+            height={props.height}
+            style={{ border: `${style.borderWidth}px solid ${style.borderColor}` }}
+            onMouseDown={eventHandlers.handleMouseDown}
+            onMouseMove={eventHandlers.handleMouseMove}
+            onMouseUp={eventHandlers.handleMouseUp}
+            onMouseLeave={eventHandlers.handleMouseUp}
+            onWheel={eventHandlers.handleWheel}
+        />
+    );
+}
+
+export default Display;
