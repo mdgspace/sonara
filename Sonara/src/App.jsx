@@ -1,32 +1,29 @@
 import { useState, useEffect, useRef } from 'react';
-import Display from './components/Display';
+import EQ from './components/EQ';
+import { createWaveform } from './utils';
 
 function App() {
-    const xRange = [20, 20000];
     const displayWidth = 800;
-    const displayHeight = 400;
+    const displayHeight = 250;
 
-    // Initial state for 5 nodes, evenly spaced in the new xRange
-    const initialNodes = Array.from({ length: 5 }, (_, i) => ({
-        x: xRange[0] + (i / 4) * (xRange[1] - xRange[0]),
-        y: 0.5
-    }));
-
-    // Initial state for 4 curves (for 5 nodes), all set to 1
-    const initialCurves = Array(initialNodes.length - 1).fill(1);
-
-    const [nodes, setNodes] = useState(initialNodes);
-    const [curves, setCurves] = useState(initialCurves);
-    const [oscillatorType, setOscillatorType] = useState('sine');
-    const [frequency, setFrequency] = useState(440);
+    const [waveform, setWaveform] = useState('sawtooth');
+    const [baseFreq, setBaseFreq] = useState(440);
+    const [freqs, setFreqs] = useState([]); // Raw harmonics
+    const [eqFreqs, setEqFreqs] = useState([]); // Harmonics after EQ
     const [isPlaying, setIsPlaying] = useState(false);
     const [wasmModule, setWasmModule] = useState(null);
 
     const audioContextRef = useRef(null);
     const sourceNodeRef = useRef(null);
 
-    // Effect to load the WASM module on component mount
+    // Effect to load the WASM module and initialize AudioContext on component mount
     useEffect(() => {
+        async function initWasmModule() {
+            const wasm = await window.Module({
+                locateFile: (path) => "/dsp.wasm",
+            });
+            setWasmModule(wasm);
+        }
 
         initWasmModule();
         // Initialize AudioContext
@@ -40,17 +37,14 @@ function App() {
         };
     }, []);
 
-    async function initWasmModule() {
-        const wasm = await window.Module({
-            locateFile: (path) => "/dsp.wasm",
-        });
-        setWasmModule(wasm);
-    }
+    // Effect to regenerate the base waveform when type or frequency changes
+    useEffect(() => {
+        const newFreqs = createWaveform(waveform, baseFreq);
+        setFreqs(newFreqs);
+    }, [waveform, baseFreq]);
 
     const handlePlayClick = async () => {
-        console.log("handlePlayClick called");
         if (isPlaying) {
-            // Stop the sound
             if (sourceNodeRef.current) {
                 sourceNodeRef.current.stop();
                 sourceNodeRef.current = null;
@@ -64,20 +58,27 @@ function App() {
             return;
         }
 
-        setIsPlaying(true);
+        // Resume AudioContext if it's in a suspended state (required by modern browsers)
+        if (audioContextRef.current.state === 'suspended') {
+            await audioContextRef.current.resume();
+        }
 
-        // const sampleRate = audioContextRef.current.sampleRate;
         const sampleRate = 44100;
-        const duration = 1.0; // 1 second duration
-        const pairs = new wasmModule.VectorDouble();
-        pairs.push_back(500);
-        pairs.push_back(1);
-        const freqAmpPairs=  new wasmModule.VectorVectorDouble();
-        freqAmpPairs.push_back(pairs);
+        const duration = 1.0; // 2 seconds duration
+
+        // Convert JS array of pairs to WASM Vector of Vectors
+        const freqAmpPairs = new wasmModule.VectorVectorDouble();
+        eqFreqs.forEach(([freq, amp]) => {
+            const pair = new wasmModule.VectorDouble();
+            pair.push_back(freq);
+            pair.push_back(amp);
+            freqAmpPairs.push_back(pair);
+            pair.delete();
+        });
 
         // 1. Generate PCM data from WASM
         const pcmDataVector = wasmModule.generatePcmData(freqAmpPairs, sampleRate, duration);
-        // alert(`pcmDataVector: ${JSON.stringify(pcmDataVector)}`);
+        freqAmpPairs.delete(); // Clean up the C++ vector of vectors
         const pcmData = new Int16Array(pcmDataVector.size());
         for (let i = 0; i < pcmDataVector.size(); i++) {
             pcmData[i] = pcmDataVector.get(i);
@@ -96,6 +97,7 @@ function App() {
 
         const source = audioContextRef.current.createBufferSource();
         source.buffer = audioBuffer;
+        source.loop = true; // Loop the sound
         source.connect(audioContextRef.current.destination);
         source.onended = () => {
             setIsPlaying(false);
@@ -103,45 +105,48 @@ function App() {
         };
         source.start(0);
         sourceNodeRef.current = source;
+        setIsPlaying(true);
     };
 
     return (
         <div className="App">
             <h1>Sonara</h1>
-            <div>
-                <label htmlFor="osc-type">Oscillator Type: </label>
-                <select id="osc-type" value={oscillatorType} onChange={(e) => setOscillatorType(e.target.value)}>
-                    <option value="sine">Sine</option>
-                    <option value="square">Square</option>
-                    <option value="sawtooth">Sawtooth</option>
-                    <option value="triangle">Triangle</option>
-                </select>
+            <div className="controls">
+                <div className="control-group">
+                    <label htmlFor="osc-type">Waveform: </label>
+                    <select id="osc-type" value={waveform} onChange={(e) => setWaveform(e.target.value)}>
+                        <option value="sine">Sine</option>
+                        <option value="square">Square</option>
+                        <option value="sawtooth">Sawtooth</option>
+                        <option value="triangle">Triangle</option>
+                    </select>
+                </div>
+                <div className="control-group">
+                    <label htmlFor="frequency">Base Frequency: {baseFreq.toFixed(0)} Hz</label>
+                    <input
+                        type="range"
+                        id="frequency"
+                        min="20"
+                        max="5000" // A max of 5kHz is more practical for a slider
+                        step="1"
+                        value={baseFreq}
+                        onChange={(e) => setBaseFreq(Number(e.target.value))}
+                    />
+                </div>
             </div>
-            <div>
-                <label htmlFor="frequency">Frequency: {frequency.toFixed(2)} Hz</label>
-                <input
-                    type="range"
-                    id="frequency"
-                    min="20"
-                    max="20000"
-                    step="1"
-                    value={frequency}
-                    onChange={(e) => setFrequency(Number(e.target.value))}
-                />
-            </div>
-            <Display
+
+            <EQ
+                freqs={freqs}
+                setEqFreqs={setEqFreqs}
                 width={displayWidth}
                 height={displayHeight}
-                nodes={nodes}
-                xRange={xRange}
-                curves={curves}
-                onNodesChange={setNodes}
-                onCurvesChange={setCurves}
             />
-            <button onClick={handlePlayClick}>
+
+            <button onClick={handlePlayClick} disabled={!wasmModule}>
                 {isPlaying ? 'Stop' : 'Play'}
             </button>
         </div>
     );
 }
+
 export default App;
