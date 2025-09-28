@@ -102,8 +102,13 @@ export const getEnvelopeValue = (nodes, curves, x) => {
 
         if (x >= startNode.x && x <= endNode.x) {
             // Normalize x to a 0-1 range (t) between the two nodes
-            const t = (x - startNode.x) / (endNode.x - startNode.x);
+            // We must do this in log space to match the visual representation of the EQ.
+            const logX = Math.log(x);
+            const logStartX = Math.log(startNode.x);
+            const logEndX = Math.log(endNode.x);
+            const t = (logX - logStartX) / (logEndX - logStartX);
             const shape = curves[i];
+
             const curvedT = applyShape(t, shape);
 
             // Interpolate the y-value based on the curved t
@@ -126,5 +131,8 @@ export const applyEnvelope = (nodes, curves, xyPairs) => {
     if (!xyPairs || xyPairs.length === 0) {
         return [];
     }
-    return xyPairs.map(([x, y]) => [x, Math.min(1-getEnvelopeValue(nodes, curves, x), y)]);
+    return xyPairs.map(([x, y]) => {
+        const envelopeMultiplier = 1 - getEnvelopeValue(nodes, curves, x);
+        return [x, envelopeMultiplier * y];
+    });
 };
