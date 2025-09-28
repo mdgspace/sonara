@@ -1,18 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import EQ from './components/EQ';
 import Keys from './components/Keys';
-import { play } from './audio';
+import ADSR from './components/ADSR';
+import { Voice } from './audio';
+import './components/ADSR.css';
+
+import { applyEnvelope } from './utils';
 
 function App() {
     const displayWidth = 800;
     const displayHeight = 250;
 
-    const [freqs, setFreqs] = useState([]); // Harmonics from Keys component
-    const [eqFreqs, setEqFreqs] = useState([]); // Harmonics after EQ is applied
+    const [adsr, setAdsr] = useState({ attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.5 });
     const [wasmModule, setWasmModule] = useState(null);
-    const audioControlRef = useRef(null);
 
-    // Effect to load the WASM module and initialize AudioContext on component mount
+    // Refs for audio context and active voices
+    const audioContextRef = useRef(null);
+    const voicesRef = useRef({}); // Map of note -> Voice object
+
+    // Effect to load WASM and initialize AudioContext
     useEffect(() => {
         async function initWasmModule() {
             const wasm = await window.Module({
@@ -20,44 +26,66 @@ function App() {
             });
             setWasmModule(wasm);
         }
+
+        // Initialize AudioContext
+        if (!audioContextRef.current) {
+            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
         initWasmModule();
 
         return () => {
-            if (audioControlRef.current) {
-                audioControlRef.current.stop();
+            // Cleanup audio context on component unmount
+            if (audioContextRef.current) {
+                audioContextRef.current.close();
+                audioContextRef.current = null;
             }
         };
     }, []);
 
-    // Effect to automatically play/stop sound when eqFreqs change
-    useEffect(() => {
-        const handlePlayback = async () => {
-            // Stop any currently playing sound
-            if (audioControlRef.current) {
-                audioControlRef.current.stop();
-                audioControlRef.current = null;
-            }
+    // This state will hold the envelope shape from the EQ component
+    const [eq, setEq] = useState({ nodes: [], curves: [] });
 
-            // If there are frequencies to play and the WASM module is loaded, start new sound
-            if (wasmModule && eqFreqs.length > 0) {
-                const audioControl = await play(wasmModule, eqFreqs);
-                if (audioControl) {
-                    audioControlRef.current = audioControl;
-                }
-            }
-        };
 
-        handlePlayback();
-    }, [eqFreqs, wasmModule]);
+    const handleNoteDown = async (note, rawWave) => {
+        if (!wasmModule || !audioContextRef.current) return;
+
+        // Resume AudioContext if it's suspended
+        if (audioContextRef.current.state === 'suspended') {
+            await audioContextRef.current.resume();
+        }
+
+        // Stop existing voice for this note if it exists
+        if (voicesRef.current[note]) {
+            voicesRef.current[note].stop();
+        }
+
+        // Apply the current EQ envelope to the raw waveform from the Keys component
+        const eqWave = applyEnvelope(eq.nodes, eq.curves, rawWave);
+
+        // Create and start a new voice
+        const voice = new Voice(audioContextRef.current, wasmModule, eqWave, adsr);
+        voicesRef.current[note] = voice;
+        voice.start();
+    };
+
+    const handleNoteUp = (note) => {
+        if (voicesRef.current[note]) {
+            voicesRef.current[note].stop();
+            delete voicesRef.current[note];
+        }
+    };
+
     return (
         <div className="App">
             <h1>Sonara</h1>
 
-            <Keys setFreqs={setFreqs} />
+            <Keys onNoteDown={handleNoteDown} onNoteUp={handleNoteUp} />
+
+            <ADSR adsr={adsr} setAdsr={setAdsr} />
 
             <EQ
-                freqs={freqs}
-                setEqFreqs={setEqFreqs}
+                setEq={setEq}
                 width={displayWidth}
                 height={displayHeight}
             />

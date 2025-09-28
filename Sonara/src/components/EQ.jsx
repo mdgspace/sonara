@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Display from './Display';
 import { applyEnvelope } from '../utils';
 
@@ -7,13 +7,11 @@ import { applyEnvelope } from '../utils';
  * It uses the Display component to visualize and interact with the envelope nodes and curves.
  * When the envelope is changed, it applies it to the incoming frequencies.
  * @param {{
- *   freqs: Array<[number, number]>,
- *   setEqFreqs: (freqs: Array<[number, number]>) => void,
+ *   setEq: (eq: { nodes: Array<{x: number, y: number}>, curves: number[] }) => void,
  *   width: number,
  *   height: number
- * }} props
  */
-function EQ({ freqs, setEqFreqs, width, height }) {
+function EQ({ setEq, width, height, freqs: liveFreqs }) {
     const xRange = [20, 20000];
 
     // Initial state for 5 nodes, evenly spaced in the xRange with a default y of 0.8
@@ -28,17 +26,10 @@ function EQ({ freqs, setEqFreqs, width, height }) {
     const [nodes, setNodes] = useState(initialNodes);
     const [curves, setCurves] = useState(initialCurves);
 
-    const eqFreqs = useMemo(() => {
-        if (freqs && freqs.length > 0) {
-            return applyEnvelope(nodes, curves, freqs);
-        }
-        return [];
-    }, [nodes, curves, freqs]);
-
     // When the envelope (nodes or curves) changes, apply it to the frequencies.
     useEffect(() => {
-        setEqFreqs(eqFreqs);
-    }, [eqFreqs, setEqFreqs]);
+        setEq({ nodes, curves });
+    }, [nodes, curves, setEq]);
 
     return (
         <div>
@@ -51,7 +42,7 @@ function EQ({ freqs, setEqFreqs, width, height }) {
                 curves={curves}
                 onNodesChange={setNodes}
                 onCurvesChange={setCurves}
-                freqs={eqFreqs}
+                freqs={applyEnvelope(nodes, curves, liveFreqs || [])}
                 isLogarithmic={true}
             />
         </div>

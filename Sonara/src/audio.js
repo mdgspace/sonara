@@ -1,66 +1,81 @@
 /**
- * Creates an AudioContext, generates PCM data using the WASM module,
- * and plays the sound.
- * @param {object} wasmModule The initialized WASM module.
- * @param {Array<[number, number]>} frequencies An array of [frequency, amplitude] pairs.
- * @returns {Promise<object|null>} A promise that resolves to an object with a `stop` method, or null on failure.
+ * Represents a single synthesizer voice, handling its entire lifecycle
+ * from note-on to note-off, including the ADSR envelope.
  */
-export async function play(wasmModule, frequencies) {
-    if (!wasmModule) {
-        console.error("WASM module not ready.");
-        return null;
+export class Voice {
+    constructor(audioContext, wasmModule, frequencies, adsr) {
+        this.audioContext = audioContext;
+        this.wasmModule = wasmModule;
+        this.frequencies = frequencies;
+        this.adsr = adsr;
+
+        // Create the GainNode for ADSR volume control
+        this.gainNode = this.audioContext.createGain();
+        this.gainNode.connect(this.audioContext.destination);
+
+        // Create the sound source
+        this.source = this._createSource();
+        this.source.connect(this.gainNode);
     }
 
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    _createSource() {
+        const sampleRate = 44100;
+        const duration = 1.0; // 1-second buffer, which will be looped
 
-    // Resume AudioContext if it's in a suspended state (required by modern browsers)
-    if (audioContext.state === 'suspended') {
-        await audioContext.resume();
-    }
+        // Convert JS array of pairs to WASM Vector of Vectors
+        const freqAmpPairs = new this.wasmModule.VectorVectorDouble();
+        this.frequencies.forEach(([freq, amp]) => {
+            const pair = new this.wasmModule.VectorDouble();
+            pair.push_back(freq);
+            pair.push_back(amp);
+            freqAmpPairs.push_back(pair);
+            pair.delete();
+        });
 
-    const sampleRate = 44100;
-    const duration = 1.0; // 1-second buffer, which will be looped
+        // 1. Generate PCM data from WASM
+        const pcmDataVector = this.wasmModule.generatePcmData(freqAmpPairs, sampleRate, duration);
+        freqAmpPairs.delete();
 
-    // Convert JS array of pairs to WASM Vector of Vectors
-    const freqAmpPairs = new wasmModule.VectorVectorDouble();
-    frequencies.forEach(([freq, amp]) => {
-        const pair = new wasmModule.VectorDouble();
-        pair.push_back(freq);
-        pair.push_back(amp);
-        freqAmpPairs.push_back(pair);
-        pair.delete();
-    });
-
-    // 1. Generate PCM data from WASM
-    const pcmDataVector = wasmModule.generatePcmData(freqAmpPairs, sampleRate, duration);
-    freqAmpPairs.delete(); // Clean up the C++ vector of vectors
-
-    const pcmData = new Int16Array(pcmDataVector.size());
-    for (let i = 0; i < pcmDataVector.size(); i++) {
-        pcmData[i] = pcmDataVector.get(i);
-    }
-    pcmDataVector.delete(); // Clean up the C++ vector memory
-
-    // 2. Convert int16 PCM to float32 for Web Audio API
-    const float32Data = new Float32Array(pcmData.length);
-    for (let i = 0; i < pcmData.length; i++) {
-        float32Data[i] = pcmData[i] / 32767.0;
-    }
-
-    // 3. Create and play audio buffer
-    const audioBuffer = audioContext.createBuffer(1, float32Data.length, sampleRate);
-    audioBuffer.copyToChannel(float32Data, 0);
-
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.loop = true; // Loop the sound
-    source.connect(audioContext.destination);
-    source.start(0);
-
-    return {
-        stop: () => {
-            source.stop();
-            audioContext.close();
+        const pcmData = new Int16Array(pcmDataVector.size());
+        for (let i = 0; i < pcmDataVector.size(); i++) {
+            pcmData[i] = pcmDataVector.get(i);
         }
-    };
+        pcmDataVector.delete();
+
+        // 2. Convert int16 PCM to float32 for Web Audio API
+        const float32Data = new Float32Array(pcmData.length);
+        for (let i = 0; i < pcmData.length; i++) {
+            float32Data[i] = pcmData[i] / 32767.0;
+        }
+
+        // 3. Create audio buffer
+        const audioBuffer = this.audioContext.createBuffer(1, float32Data.length, sampleRate);
+        audioBuffer.copyToChannel(float32Data, 0);
+
+        const source = this.audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.loop = true;
+        return source;
+    }
+
+    start() {
+        const now = this.audioContext.currentTime;
+        const { attack, decay, sustain } = this.adsr;
+
+        this.source.start(now);
+        this.gainNode.gain.cancelScheduledValues(now);
+        this.gainNode.gain.setValueAtTime(0, now); // Start at 0 volume
+        this.gainNode.gain.linearRampToValueAtTime(1.0, now + attack); // Attack
+        this.gainNode.gain.linearRampToValueAtTime(sustain, now + attack + decay); // Decay to Sustain
+    }
+
+    stop() {
+        const now = this.audioContext.currentTime;
+        const { release } = this.adsr;
+        this.gainNode.gain.cancelScheduledValues(now);
+        this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now); // Start from current gain
+        this.gainNode.gain.linearRampToValueAtTime(0, now + release); // Release
+        // Schedule the source to stop after the release phase is complete
+        this.source.stop(now + release);
+    }
 }

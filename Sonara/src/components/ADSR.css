@@ -1,0 +1,24 @@
+.adsr-container {
+    padding: 20px;
+    background-color: #282c34;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.adsr-container h3 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.adsr-controls {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.adsr-controls .control-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}

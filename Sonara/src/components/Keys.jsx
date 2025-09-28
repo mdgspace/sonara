@@ -15,7 +15,7 @@ const noteFrequencies = {
 const keyMap = { 'z': 'C', 'x': 'D', 'c': 'E', 'v': 'F', 'b': 'G', 'n': 'A', 'm': 'B' };
 const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 
-function Keys({ setFreqs }) {
+function Keys({ onNoteDown, onNoteUp }) {
     const [waveform, setWaveform] = useState('sawtooth');
     const [octave, setOctave] = useState(4);
     const [activeKeys, setActiveKeys] = useState(new Set());
@@ -64,42 +64,27 @@ function Keys({ setFreqs }) {
         drawWaveform();
     }, [drawWaveform]);
 
-    const updateParentFreqs = useCallback(() => {
-        if (activeKeys.size === 0) {
-            setFreqs([]);
-            return;
-        }
-
-        let allFreqs = [];
-        activeKeys.forEach(note => {
-            const baseFreq = noteFrequencies[note] * Math.pow(2, octave - 4);
-            const newWave = createWaveform(waveform, baseFreq);
-            allFreqs = allFreqs.concat(newWave);
-        });
-
-        setFreqs(allFreqs);
-    }, [activeKeys, octave, waveform, setFreqs]);
-
-    useEffect(() => {
-        updateParentFreqs();
-    }, [updateParentFreqs]);
-
     const handleKeyDown = useCallback((note) => {
-        setActiveKeys(prev => new Set(prev).add(note));
-    }, []);
+        const baseFreq = noteFrequencies[note] * Math.pow(2, octave - 4);
+        const wave = createWaveform(waveform, baseFreq);
+        onNoteDown(note, wave);
+        setActiveKeys(prev => new Set(prev).add(note)); // For UI update
+    }, [octave, waveform, onNoteDown]);
 
     const handleKeyUp = useCallback((note) => {
+        onNoteUp(note);
         setActiveKeys(prev => {
             const newSet = new Set(prev);
             newSet.delete(note);
             return newSet;
-        });
-    }, []);
+        }); // For UI update
+    }, [onNoteUp]);
 
     useEffect(() => {
         const keydownListener = (e) => {
             const note = keyMap[e.key.toLowerCase()];
             if (note && !activeKeys.has(note)) {
+                e.preventDefault();
                 handleKeyDown(note);
             }
         };
@@ -107,6 +92,7 @@ function Keys({ setFreqs }) {
         const keyupListener = (e) => {
             const note = keyMap[e.key.toLowerCase()];
             if (note) {
+                e.preventDefault();
                 handleKeyUp(note);
             }
         };
