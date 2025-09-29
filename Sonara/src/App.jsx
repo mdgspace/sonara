@@ -4,6 +4,10 @@ import Keys from './components/Keys';
 import ADSR from './components/ADSR';
 import { Voice } from './audio';
 import './components/ADSR.css';
+import './App.css';
+import './components/Keys.css';
+import './components/Display.css';
+import './components/EQ.css';
 
 import { applyEnvelope } from './utils';
 
@@ -13,7 +17,7 @@ function App() {
 
     const [adsr, setAdsr] = useState({ attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.5 });
     const [wasmModule, setWasmModule] = useState(null);
-
+    const [rawwave, setRawwave] = useState([]);
     // Refs for audio context and active voices
     const audioContextRef = useRef(null);
     const voicesRef = useRef({}); // Map of note -> Voice object
@@ -61,10 +65,11 @@ function App() {
         }
 
         // Apply the current EQ envelope to the raw waveform from the Keys component
-        const eqWave = applyEnvelope(eq.nodes, eq.curves, rawWave);
+        const freq = applyEnvelope(eq.nodes, eq.curves, rawWave)
+        setRawwave(rawWave); console.log(rawwave);
 
         // Create and start a new voice
-        const voice = new Voice(audioContextRef.current, wasmModule, eqWave, adsr);
+        const voice = new Voice(audioContextRef.current, wasmModule, freq, adsr);
         voicesRef.current[note] = voice;
         voice.start();
     };
@@ -76,22 +81,24 @@ function App() {
         }
     };
 
-    return (
-        <div className="App">
-            <h1>Sonara</h1>
+        return (
+            <div className="App">
+                <h1>Sonara</h1>
 
-            <Keys onNoteDown={handleNoteDown} onNoteUp={handleNoteUp} />
+                <Keys onNoteDown={handleNoteDown} onNoteUp={handleNoteUp} />
 
-            <ADSR adsr={adsr} setAdsr={setAdsr} />
+                <ADSR adsr={adsr} setAdsr={setAdsr} />
 
-            <EQ
-                setEq={setEq}
-                width={displayWidth}
-                height={displayHeight}
-            />
+                <EQ
+                    setEq={setEq}
+                    eq={eq}
+                    width={displayWidth}
+                    height={displayHeight}
+                    freqs={rawwave}
+                />
 
-        </div>
-    );
+            </div>
+        );
 }
 
 export default App;

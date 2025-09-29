@@ -1,0 +1,69 @@
+/* 
+.EQ {
+  background: rgba(10, 15, 30, 0.8);
+  border: 2px solid #1e3a8a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.EQ h3 {
+  color: #ffd700;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+}
+
+.EQ canvas {
+  width: 100%;
+  border: 2px solid #2563eb !important;
+  border-radius: 8px;
+  background: #0f172a;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.EQ canvas:hover {
+  border-color: #3b82f6 !important;
+  box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.2), 0 0 10px rgba(59, 130, 246, 0.1);
+} */
+ 
+/* ... existing styles ... */
+
+.EQ {
+    background: rgba(10, 15, 30, 0.8);
+    border: 2px solid #1e3a8a;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    /* --- Add these three lines to center the content --- */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.EQ h3 {
+    color: #ffd700;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+    letter-spacing: 1px;
+    font-weight: 600;
+    width: 100%; /* Ensure heading takes full width for text-align to work well */
+}
+
+
+@media (max-width: 768px) {
+    .EQ {
+        padding: 15px;
+    }
+
+    .EQ h3 {
+        font-size: 1.2rem;
+    }
+}

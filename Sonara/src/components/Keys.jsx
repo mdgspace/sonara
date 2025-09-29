@@ -1,7 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, use } from 'react';
 import { createWaveform } from '../utils';
 import './Keys.css';
 
+const waveimages = {
+    sine:'../../sine.png', 
+    square:'../../square.png', 
+    triangle:'../../triangle.png', 
+    sawtooth:'../../sawtooth.png'
+};
 const noteFrequencies = {
     'C': 261.63, // C4
     'D': 293.66,
@@ -19,50 +25,7 @@ function Keys({ onNoteDown, onNoteUp }) {
     const [waveform, setWaveform] = useState('sawtooth');
     const [octave, setOctave] = useState(4);
     const [activeKeys, setActiveKeys] = useState(new Set());
-    const canvasRef = useRef(null);
 
-    const drawWaveform = useCallback(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
-
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(0, 0, width, height);
-        ctx.strokeStyle = '#00c8ff';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-
-        const wave = createWaveform(waveform, 1); // Use base freq of 1 for shape
-        const combinedWave = (x) => {
-            let y = 0;
-            for (const [freq, amp] of wave) {
-                y += Math.sin(x * 2 * Math.PI * freq) * amp;
-            }
-            return y;
-        };
-
-        let maxAmp = 0;
-        for (let i = 0; i < width; i++) {
-            const x = i / width * 2; // 2 cycles
-            maxAmp = Math.max(maxAmp, Math.abs(combinedWave(x)));
-        }
-        
-        const yScale = maxAmp > 0 ? (height / 2 * 0.8) / maxAmp : 1;
-
-        ctx.moveTo(0, height / 2);
-        for (let i = 0; i < width; i++) {
-            const x = i / width * 2; // Draw 2 cycles
-            const y = combinedWave(x);
-            ctx.lineTo(i, height / 2 - y * yScale);
-        }
-        ctx.stroke();
-    }, [waveform]);
-
-    useEffect(() => {
-        drawWaveform();
-    }, [drawWaveform]);
 
     const handleKeyDown = useCallback((note) => {
         const baseFreq = noteFrequencies[note] * Math.pow(2, octave - 4);
@@ -120,7 +83,7 @@ function Keys({ onNoteDown, onNoteUp }) {
                 </div>
 
                 <div className="waveform-display">
-                    <canvas ref={canvasRef} width="150" height="50"></canvas>
+                    <img src={waveimages[waveform]} alt={waveform} width="50%" height='50%' />
                 </div>
 
                 <div className="control-group">

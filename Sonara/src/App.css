@@ -1,0 +1,18 @@
+
+.App {
+  background: linear-gradient(135deg, #0a0a1a 0%, #121225 100%);
+  min-height: 100vh;
+  padding: 20px;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.App h1 {
+  text-align: center;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+}
+

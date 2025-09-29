@@ -1,0 +1,78 @@
+
+.display-container {
+  position: relative;
+  width: 100%;
+  background: #0f172a;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.display-canvas {
+  width: 100%;
+  background: #0f172a !important;
+  border: 1px solid #2563eb !important;
+  border-radius: 8px;
+  cursor: crosshair;
+  transition: border-color 0.2s ease;
+}
+
+.display-canvas:hover {
+  border-color: #3b82f6 !important;
+  box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.2), 0 0 10px rgba(59, 130, 246, 0.1);
+}
+
+.display-canvas:focus {
+  border-color: #ffd700 !important;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  outline: none;
+}
+
+/* Node styling (if you have visible nodes) */
+.display-node {
+  fill: #ffffff;
+  stroke: #ffd700;
+  stroke-width: 1;
+}
+
+.display-connector {
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+/* Additional theme elements */
+.display-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.display-grid {
+  stroke: rgba(37, 99, 235, 0.3);
+  stroke-width: 1;
+}
+
+.display-axis {
+  stroke: #3b82f6;
+  stroke-width: 2;
+}
+
+.display-label {
+  fill: #ffffff;
+  font-size: 12px;
+  font-weight: 300;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .display-container {
+    border-radius: 6px;
+  }
+  
+  .display-canvas {
+    border-width: 1px !important;
+  }
+}

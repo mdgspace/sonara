@@ -2,16 +2,16 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { applyShape } from '../utils';
 
 const style = {
-    backgroundColor: "#000000",
-    borderColor: "#FFFFFF",
-    barColor: "rgba(255, 255, 255, 0.5)",
-    borderWidth: 1,
-    nodeColor: "#FFFFFF",
-    connectorColor: "#FFFFFF",
+    backgroundColor: "#0f172a",        // Dark blue-black background
+    borderColor: "#2563eb",            // Blue border
+    barColor: "rgba(255, 215, 0, 0.3)", // Golden bars with transparency
+    borderWidth: 2,                    // Slightly thicker border
+    nodeColor: "#ffd700",              // Golden nodes
+    connectorColor: "#ffffff",         // White connectors
     connectorWidth: 2,
-    nodeRadius: 5,
-    hitRadius: 5,
-    shapeSpeed: 0.1 // How much to change the shape on each scroll tick
+    nodeRadius: 6,
+    hitRadius: 8,
+    shapeSpeed: 0.1
 };
 
 const useCanvasDrawing = (canvasRef, { width, height, nodes, xRange, curves, freqs, isLogarithmic }) => {
@@ -66,7 +66,7 @@ const useCanvasDrawing = (canvasRef, { width, height, nodes, xRange, curves, fre
 
             for (let i = 0; i < nodes.length - 1; i++) {
                 const startNode = nodes[i];
-                const endNode = nodes[i+1];
+                const endNode = nodes[i + 1];
                 const shape = curves[i] !== undefined ? curves[i] : 0; // Default to 0 (straight line)
 
                 const startPoint = getCanvasPoint(startNode);

@@ -9,7 +9,7 @@ import { applyEnvelope } from '../utils';
  * @param {{
  *   setEq: (eq: { nodes: Array<{x: number, y: number}>, curves: number[] }) => void,
  *   width: number,
- *   height: number
+ *   height: number}}
  */
 function EQ({ setEq, width, height, freqs: liveFreqs }) {
     const xRange = [20, 20000];
@@ -28,11 +28,11 @@ function EQ({ setEq, width, height, freqs: liveFreqs }) {
 
     // When the envelope (nodes or curves) changes, apply it to the frequencies.
     useEffect(() => {
-        setEq({ nodes, curves });
+        setEq({ nodes, curves }); ;
     }, [nodes, curves, setEq]);
 
     return (
-        <div>
+        <div className='EQ'>
             <h3>Frequency EQ</h3>
             <Display
                 width={width}
