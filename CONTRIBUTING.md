@@ -88,6 +88,15 @@ The scope provides context for the change, usually naming the affected component
 
 - refactor(hooks): Move canvas drawing to useCanvas.js file
 
+### Contribution Guidelines
+
+When contributing to this project, please ensure the following:
+
+1. Follow the commit message format outlined in this document.
+2. Write clean, well-documented, and tested code.
+3. **Update the `FEATURES.md` file**: Whenever you add a new feature or make significant changes to existing functionality, ensure that the `FEATURES.md` file is updated to reflect the changes. This helps keep the documentation consistent and up-to-date.
+4. Submit a detailed pull request with a clear description of the changes made.
+
 ## Thank You!
 
 Your contributions are vital to improving this project. We are excited to collaborate with you and look forward to seeing your Pull Request! If you have any questions, please feel free to open an issue for discussion.
