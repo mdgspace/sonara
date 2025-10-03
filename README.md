@@ -48,11 +48,15 @@ The project is organized as follows:
 
 Each subdirectory contains its own `README.md` file with more specific information.
 
-## Introduction
+## Project Overview
 
 For a non-technical overview of the project, including its purpose, vision, and how it empowers users to create sound effortlessly, see the [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) file. 
 
 **Contributors are encouraged to read this document first** to understand the project's goals and the context behind its development.
+
+## Features
+
+For a comprehensive overview of the features currently implemented in the project, refer to the [FEATURES.md](FEATURES.md) file.
 
 ## Technical Details
 
