@@ -48,6 +48,12 @@ The project is organized as follows:
 
 Each subdirectory contains its own `README.md` file with more specific information.
 
+## Introduction
+
+For a non-technical overview of the project, including its purpose, vision, and how it empowers users to create sound effortlessly, see the [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) file. 
+
+**Contributors are encouraged to read this document first** to understand the project's goals and the context behind its development.
+
 ## Technical Details
 
 For an in-depth explanation of the audio synthesis concepts used in this project, including waveforms, harmonics, and synthesis techniques, see the [TECHNICAL_DETAILS.md](TECHNICAL_DETAILS.md) file.
