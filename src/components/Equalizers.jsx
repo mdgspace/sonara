@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Display from './Display';
-import { applyEnvelope } from '../utils';
+import { applyEnvelope } from '../utils/applyEnvelope';
 
 /**
  * A component for editing a frequency envelope (EQ).
@@ -14,21 +14,19 @@ import { applyEnvelope } from '../utils';
 function EQ({ setEq, width, height, freqs: liveFreqs }) {
     const xRange = [20, 20000];
 
-    // Initial state for 5 nodes, evenly spaced in the xRange with a default y of 0.8
+    // Initialize nodes and curves for the EQ
     const initialNodes = Array.from({ length: 5 }, (_, i) => ({
         x: xRange[0] + (i / 4) * (xRange[1] - xRange[0]),
         y: 0.8
     }));
-
-    // Initial state for 4 curves (for 5 nodes), all set to 1 (convex)
     const initialCurves = Array(initialNodes.length - 1).fill(1);
 
     const [nodes, setNodes] = useState(initialNodes);
     const [curves, setCurves] = useState(initialCurves);
 
-    // When the envelope (nodes or curves) changes, apply it to the frequencies.
+    // Update EQ state when nodes or curves change
     useEffect(() => {
-        setEq({ nodes, curves }); ;
+        setEq({ nodes, curves });
     }, [nodes, curves, setEq]);
 
     return (

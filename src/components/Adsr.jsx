@@ -1,7 +1,7 @@
 import React from 'react';
-import './ADSR.css';
 
 function ADSR({ adsr, setAdsr }) {
+    // Update ADSR parameter values
     const handleChange = (param, value) => {
         setAdsr(prev => ({ ...prev, [param]: Number(value) }));
     };
@@ -10,6 +10,7 @@ function ADSR({ adsr, setAdsr }) {
         <div className="adsr-container">
             <h3>Amplitude Envelope</h3>
             <div className="adsr-controls">
+                {/* Attack control */}
                 <div className="control-group">
                     <label htmlFor="attack">Attack</label>
                     <input
@@ -23,6 +24,7 @@ function ADSR({ adsr, setAdsr }) {
                     />
                     <span>{adsr.attack.toFixed(2)}s</span>
                 </div>
+                {/* Decay control */}
                 <div className="control-group">
                     <label htmlFor="decay">Decay</label>
                     <input
@@ -36,6 +38,7 @@ function ADSR({ adsr, setAdsr }) {
                     />
                     <span>{adsr.decay.toFixed(2)}s</span>
                 </div>
+                {/* Sustain control */}
                 <div className="control-group">
                     <label htmlFor="sustain">Sustain</label>
                     <input
@@ -49,6 +52,7 @@ function ADSR({ adsr, setAdsr }) {
                     />
                     <span>{(adsr.sustain * 100).toFixed(0)}%</span>
                 </div>
+                {/* Release control */}
                 <div className="control-group">
                     <label htmlFor="release">Release</label>
                     <input
