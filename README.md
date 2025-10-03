@@ -48,6 +48,10 @@ The project is organized as follows:
 
 Each subdirectory contains its own `README.md` file with more specific information.
 
+## Technical Details
+
+For an in-depth explanation of the audio synthesis concepts used in this project, including waveforms, harmonics, and synthesis techniques, see the [TECHNICAL_DETAILS.md](TECHNICAL_DETAILS.md) file.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

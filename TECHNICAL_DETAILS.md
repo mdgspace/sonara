@@ -1,0 +1,363 @@
+# web-audio-synthesizer
+
+Web based audio synthesizer plugin that leverages native speed Digital Signal Processing (DSP) offered by C++ Web Assembly built right into the frontend of the synthesizer.
+
+---
+
+# Audio Manipulation Notes
+
+If we assume a vibrating string to form a standing wave between the two ends it is plucked at, it will have a fundamental frequency of vibration. 
+Harmonics are frequencies that are whole number multiples of the fundamental frequency.
+
+## What are Waveforms?
+We identify certain combinations of harmonics which work well together, we call them "waveforms". The following are some common waveforms:
+- **Sine:** Pure tone, only the fundamental frequency
+- **Square:** Fundamental frequency + Odd harmonics 
+- **Sawtooth:** Fundamental frequency + All harmonics
+- **Triangle:** Fundamental frequency + Odd harmonics (softer than square)
+*Odd harmonics imply frequencies that are odd multiples of the fundamental frequency*.
+**Oscillators** are used for playing these waveforms.
+
+## What is Additive & Subtractive Synthesis?
+Synthesizing sounds by adding and mixing different waveforms at different fundamental frequencies together is called **additive synthesis**.
+Synthesizing desired sound by subtracting frequencies from an existing mix of frequencies using filters is called **subtractive synthesis**.
+
+## What is Timbre?
+Timbre is also called the "color of the sound". It distinguishes two sounds with the same pitch, loudness and duration from one another. 
+Timbre is the texture of sound considering its fundamental frequency along with all harmonics and their energies combined with ADSR envelope and filters.
+
+## What are Filters?
+
+**Filters** shape the sound by removing (filtering out) certain frequencies. The most common filter types are:
+- **Low-pass:** Lets low frequencies through, cuts highs (makes sound duller)
+- **High-pass:** Lets high frequencies through, cuts lows
+- **Band-pass:** Lets a band of frequencies through, cuts above and below
+
+## What is ADSR Envelope?
+
+**ADSR** stands for **Attack, Decay, Sustain, Release**—the four stages of a sound’s volume envelope
+- **Attack:** Time to reach full volume after a note is pressed
+- **Decay:** Time to fall from full volume to sustain level
+- **Sustain:** Level held while the note is held down
+- **Release:** Time to fade out after the note is released
+ADSR shapes how a sound starts, holds, and ends—essential for making sounds expressive.
+
+## What is LFO?
+LFO stands for Low Frequency Oscillator, it produces sound of very low frequency that's beyond the audible range.
+**Key LFO Controls:**
+- **Rate (Speed):** How fast the LFO cycles. A slow rate gives gradual changes; a fast rate gives rapid, rhythmic effects.
+- **Depth (Amount):** How much the parameter moves. Low depth means subtle modulation; high depth means dramatic changes.
+- **Waveform (Shape):** The pattern of movement.
+- **Routing (Assignment):** Which parameter the LFO is controlling
+
+## Sound Effects
+
+### Delay
+Delay creates echoes by repeating the original sound after a set time. It can make vocals sound spacious, add rhythm to instruments, or simulate the acoustics of large spaces. From subtle thickening to obvious echoes, delay is a staple in music and sound design
+**Controls & Parameters:**
+- **Delay Time:** Sets how long before the echo is heard
+- **Feedback:** Determines how many times the echo repeats. High feedback can create long, decaying echoes or even self-oscillate.
+- **Mix (Wet/Dry):** Balances the original (dry) sound with the delayed (wet) signal
+- **Modulation:** Some delays add movement by modulating the delay time.
+- **Filter/EQ:** Shapes the tone of the repeats (darker or brighter).
+- **Ping-Pong:** Sends echoes bouncing between left and right speakers.
+
+### Reverb  
+Reverb simulates the sound of a space—like a room, hall, or cave—by creating a wash of echoes that blend together. It adds depth, makes sounds feel more “real,” and can transport listeners to different environments.
+**Controls & Parameters:**
+- **Pre-Delay:** Time between the direct sound and the start of reverb. Longer pre-delay makes the space feel larger.
+- **Decay/Time:** How long the reverb lasts after the sound stops
+- **Room Size:** Simulates small rooms to vast halls
+- **Damping/EQ:** Controls how quickly high and low frequencies fade, shaping the reverb’s tone
+- **Mix (Wet/Dry):** Adjusts the blend of original and reverberated sound.
+- **Early Reflections:** Controls the initial echoes that define the space’s character
+- **Modulation/Chorus:** Adds movement or thickness to the reverb tail.
+
+### Chorus
+Chorus makes a sound feel wider and richer by simulating multiple instruments or voices playing together. It adds shimmer and thickness, often used on guitars, synths, and vocals.
+**Controls & Parameters:**
+- **Depth:** How much the pitch of the duplicated signal is modulated.
+- **Rate/Speed:** How fast the pitch modulation occurs.
+- **Delay:** The time offset between the original and duplicated signals.
+- **Mix (Wet/Dry):** Balances the original and chorused signals.
+- **Feedback:** Feeds some of the output back in for a more intense effect.
+- **Wave Shape:** Shape of the LFO used for modulation (sine, square, etc.)
+- **Stereo Width/Phase:** Controls how wide the effect feels in the stereo field.
+
+### Flanger
+Flanger creates a dramatic, swirling “jet plane” or “whoosh” sound. It’s achieved by mixing a sound with a slightly delayed and modulated copy of itself, creating moving peaks and notches in the sound spectrum
+**Controls & Parameters:**
+- **Delay Time:** Very short (usually <20ms), sets the base delay.
+- **Depth:** How much the delay time is modulated.
+- **Rate:** How fast the modulation occurs.
+- **Feedback:** Amount of processed signal fed back for a more pronounced effect.
+- **Mix (Wet/Dry):** Balance between original and flanged sound.
+- **Stereo Width:** Controls the spread of the effect in stereo.
+
+### Phaser  
+Phaser gives a sound a swirling, sweeping movement by shifting the phase of certain frequencies, creating moving notches in the sound. It’s subtler than flanger, often used for texture and motion.
+**Controls & Parameters:**
+- **Rate:** Speed of the sweep LFO modulation.    
+- **Depth:** Intensity of the phase shift.
+- **Center/Manual:** Sets the center frequency of the effect.
+- **Stages/Poles:** Number of all-pass filters used, affecting the number of notches.
+- **Feedback:** Adds resonance, making the effect more pronounced.
+- **Mix (Wet/Dry):** Balance between original and phased sound.
+
+### Distortion
+Distortion adds grit, crunch, or fuzz by “clipping” the audio signal, making it sound more aggressive and harmonically rich. Used on guitars, synths, drums, and even vocals for energy and character.
+**Controls & Parameters:**
+- **Drive/Gain:** Controls how much the sound is distorted
+- **Tone/EQ:** Shapes the frequency content before or after distortion.
+- **Type:** Selects the style of distortion (overdrive, fuzz, bitcrush, etc.)
+- **Bias/Base:** Alters the character or frequency focus of the distortion.
+- **Mix (Wet/Dry):** Blends clean and distorted signals.
+- **Output Level:** Adjusts final volume, as distortion increases loudness.
+
+### Compression
+Compression evens out the volume of audio, making loud parts quieter and quiet parts louder. It helps control dynamics, smooth out performances, and make sounds sit better in a mix.
+**Controls & Parameters:**
+- **Threshold:** The level above which compression kicks in.
+- **Ratio:** How much the signal is reduced once it passes the threshold (e.g., 4:1)
+- **Attack:** How quickly compression starts after the threshold is exceeded.
+- **Release:** How quickly compression stops after the signal falls below the threshold.
+- **Knee:** How smoothly compression is applied as the signal approaches the threshold.
+- **Makeup Gain:** Boosts the compressed signal to match original loudness.
+- **Sidechain/Filter:** Some compressors can respond only to certain frequencies.
+
+---
+
+| Effect      | Use                        | Key Controls/Parameters           | Other Notes                      |
+| ----------- | -------------------------- | --------------------------------- | -------------------------------- |
+| **Delay**       | Echoes, rhythm, space      | Time, Feedback, Mix, Mod, Filter  | Haas effect for widening         |
+| **Reverb**      | Space, depth, ambiance     | Pre-delay, Decay, Size, Damping   | Early reflections, modulation    |
+| **Chorus**      | Thickness, width, shimmer  | Depth, Rate, Delay, Mix, Feedback | Simulates multiple performers    |
+| **Flanger**     | Swirl, jet, whoosh         | Delay, Depth, Rate, Feedback, Mix | Metallic, dramatic, stereo width |
+| **Phaser**      | Sweep, swirl, texture      | Rate, Depth, Center, Stages, Mix  | Subtle to dramatic movement      |
+| **Distortion**  | Grit, energy, harmonics    | Drive, Tone, Type, Mix, Output    | Adds harmonics, flattens peaks   |
+| **Compression** | Control, punch, smoothness | Threshold, Ratio, Attack, Release | Parallel, sidechain, makeup gain |
+| **EQ**          | Tone shaping, clarity      | Freq, Gain, Q, Type               | Corrective & creative uses       |
+
+---
+
+# Developer Notes
+
+The following are detailed notes that describe and document technologies used to build web-audio-sythesizer.
+
+## Pulse-Code Modulation (PCM)
+
+Pulse-Code Modulation (PCM) is a method used to digitally represent analog signals. It is the standard form for digital audio in computers, CDs, DVDs, and other digital audio applications.
+
+PCM converts a continuous-time, continuous-amplitude analog signal into a discrete-time, discrete-amplitude digital signal by sampling and quantization.
+
+2. Quantization: Approximating each sampled amplitude to the nearest value from a finite set of discrete amplitude levels.
+3. Encoding: Representing each quantized value as a binary number.
+
+### Sampling
+Measuring the amplitude of the continuous signal at regular time intervals.
+A continuous time signal $x(t)$ is represented in descrete time as: $x[n]=x(nT_s)$
+
+To avoid loss of information, the sampling frequency must be at least twice the maximum frequency present in the signal: $f_s \ge 2f_{max}$
+
+### Quantization
+Approximating each sampled amplitude to the nearest value from a finite set of discrete amplitude levels.
+
+For a signal within the amplitude range $[x_{min}, x_{max}]$, we divide the range into $L=2^B$ quantization levels, where B is the number of bits per sample.
+
+Quantization interval (step size): $\Delta =\dfrac{x_{max}- x_{min}}{L}$
+
+Let $\hat x[n]$ be the quantized signal, we know
+
+$\hat x[n] = x_{min} + \Delta \times Math.round\bigg(\dfrac{x[n]-x_{min}}{\Delta}\bigg)$
+
+### Encoding
+Each quantized value in $\hat x[n]$ can be represented as a B bit binary digit.
+
+### C++ Code Example:
+
+```cpp
+#include <vector>
+#include <cmath>
+#include <cstdint>
+
+std::vector<int16_t> generatePCM(
+    double frequency,
+    double duration,
+    int sampleRate,
+    double amplitude = 1.0
+) {
+    const int numSamples = static_cast<int>(duration * sampleRate);
+    std::vector<int16_t> pcmData(numSamples);
+
+    const double maxAmplitude = 32767.0 * amplitude;
+
+    for (int i = 0; i < numSamples; ++i) {
+        double t = static_cast<double>(i) / sampleRate;
+        double sample = maxAmplitude * sin(2.0 * M_PI * frequency * t);
+        pcmData[i] = static_cast<int16_t>(std::round(sample));
+    }
+
+    return pcmData;
+}
+```
+Note to use the function:
+- double frequency represents the freqeuncy of the wave to be modulated
+- double duration is the duration of the wav in seconds
+- int sampleRate is the sampling frequency which should obey Nyquist law
+- double amplitude is between 0 to 1 and represents normalized amplitude
+
+## Waveform Audio File Format
+
+A WAV file consists of the following chunks:
+- RIFF Header Chunk (12 bytes)
+    - ChunkID: ASCII "RIFF" (4 bytes)
+    - ChunkSize: Size of data (4 bytes)
+    - Format: ASCII "WAVE" (4 bytes)
+- fmt Subchunk (16 bytes)
+    - Subchunk1ID: ASCII "fmt" (4 bytes)
+    - Subchunk1Size: Size of this subchunk - 16 (4 bytes)
+    - AudioFormat: code 1 for PCM uncompressed (2 bytes)
+    - NumChannels: Number of audio channels - 1 for mono 2 for stereo (2 bytes)
+    - SampleRate: Sampling rate (4 bytes)
+    - ByteRate: SampleRate * NumChannels * BitsPerSample/8 (4 bytes)
+    - BlockAlign: NumChannels * BitsPerSample/8 (2 bytes)
+    - BitsPerSample: Bits in one sample (2 bytes)
+- data Subchunk (variable size)
+    - Subchunk2ID: ASCII "data" (4 bytes)
+    - Subchunk2Size: NumSamples * NumChannels * BitsPerSample/8 (4 byets)
+    - Data: Raw audio sample data (PCM encoded)
+
+A generatlized struct for PCM data can be:
+```cpp
+struct WAVHeader {
+    char riff[4] = {'R','I','F','F'};
+    uint32_t chunkSize;
+    char wave[4] = {'W','A','V','E'};
+
+    char fmt[4] = {'f','m','t',' '};
+    uint32_t subchunk1Size = 16; // PCM
+    uint16_t audioFormat = 1;    // PCM format
+    uint16_t numChannels;
+    uint32_t sampleRate;
+    uint32_t byteRate;
+    uint16_t blockAlign;
+    uint16_t bitsPerSample;
+
+    char data[4] = {'d','a','t','a'};
+    uint32_t subchunk2Size;
+};
+```
+
+We can now define a C++ function that can generate this WAV file from a vector int16_t input (This might be required only in the backend, for frontend web assembly, we will use JS Blob):
+
+```cpp
+void writeWAV(const std::string& filename,
+              const std::vector<int16_t>& pcmData,
+              uint16_t numChannels,
+              uint32_t sampleRate,
+              uint16_t bitsPerSample) {
+
+    WAVHeader header;
+    header.numChannels = numChannels;
+    header.sampleRate = sampleRate;
+    header.bitsPerSample = bitsPerSample;
+    header.blockAlign = numChannels * bitsPerSample / 8;
+    header.byteRate = sampleRate * header.blockAlign;
+    header.subchunk2Size = pcmData.size() * sizeof(int16_t);
+    header.chunkSize = 36 + header.subchunk2Size;
+
+    std::ofstream file(filename, std::ios::binary);
+    if (!file) {
+        std::cerr << "Cannot open file";
+        return;
+    }
+
+    file.write(reinterpret_cast<const char*>(&header), sizeof(WAVHeader));
+
+    file.write(reinterpret_cast<const char*>(pcmData.data()), pcmData.size() * sizeof(int16_t));
+
+    file.close();
+}
+```
+
+## Binary Large Object in Javascript
+
+Binary Large Object in Javascript, also called a JS Blob is an object for storing, manipulating, and transferring raw binary data.
+
+We can create a Blob for our WAV in javascript and then create a URL to access it from browser:
+
+```js
+const wavBlob = new Blob([wavBytes], { type: "audio/wav" });
+const wavUrl = URL.createObjectURL(wavBlob);
+```
+
+Then we can make an audio object to play the sound:
+
+```js
+const audio = document.createElement('audio');
+audio.src = wavUrl;
+audio.controls = true;
+document.body.appendChild(audio);
+audio.play();
+```
+
+We can also create a href link to download the WAV file:
+
+```js
+const link = document.createElement('a');
+link.href = wavUrl;
+link.download = "generated.wav";
+link.textContent = "Download WAV";
+document.body.appendChild(link);
+```
+
+## Using Web Assembly
+
+We first create a .cpp file with function to export marked as "extern":
+```cpp
+extern "C" {
+	int add(int a, int b) {
+		return a+b;
+	}
+}
+```
+
+To convert it to wasm, we will need to install EmScripten first (Make sure to have installed git and python before):
+
+```
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+git pull
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+```
+
+Now to make a WASM file, we run: 
+```
+emcc add.cpp -o add.js -s EXPORTED_FUNCTIONS="['_add']"
+```
+This command creates a .wasm file with a JS glue code which gives us access to the functions in CPP specified in the EXPORTED_FUNCTIONS parameter.
+
+We can access modules of cpp from javascript by adding the js glue code as script and then using Modules:
+```html
+<script src="add.js"></script>
+<script>
+    Module.onRuntimeInitialized = function() {
+      var sum = Module._add(5, 10);
+    };
+</script>
+```
+
+
+## Integer Data Types
+
+Singed integer types (int) can be negative, positive or zero, whereas unsigned integer types (uint) are always non-negative.
+
+Unsigned integer of the same size as signed integer can store upto double the maximum value that signed can store.
+
+The "_t" keyword is used to indicate that the variable has a fixed size and the size cannot be compromised.
+
+Examples: int8, int16, int32, int64, uint8, uint16, uint32, uint64
+
+We use integer array classes to store stream of integers like Int8Array, Int32Array or Uint16Array.
