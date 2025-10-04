@@ -58,7 +58,6 @@ const useCanvasDrawing = (canvasRef, { wasmModule, width, height, nodes, xRange,
                 const endNode = nodes[i + 1];
                 const shape = curves[i] !== undefined ? curves[i] : 0;
 
-                const startPoint = getCanvasPoint(startNode);
 
                 const segments = 100;
                 for (let j = 1; j <= segments; j++) {

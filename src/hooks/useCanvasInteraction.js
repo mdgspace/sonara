@@ -6,7 +6,7 @@ const style = {
     shapeSpeed: 0.1,
 };
 
-const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, curves, onNodesChange, onCurvesChange, isLogarithmic }) => {
+const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, onNodesChange, onCurvesChange, isLogarithmic }) => {
     const [draggingNodeIndex, setDraggingNodeIndex] = useState(null);
     const logXRange = [Math.log(xRange[0]), Math.log(xRange[1])];
 
