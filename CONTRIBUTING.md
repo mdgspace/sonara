@@ -13,7 +13,7 @@ The contribution process is simple and follows the standard GitHub flow:
 1.  **Fork** the repository to your own GitHub account.
 2.  **Clone** your fork to your local machine:
     ```bash
-    git clone [https://github.com/mdgspace/web-audio-synthesizer.git](https://github.com/mdgspace/web-audio-synthesizer.git)
+    git clone https://github.com/mdgspace/sonara.git
     ```
 3.  **Create a new branch** for your feature or fix. Use a descriptive name like `feat/new-filter-module` or `fix/canvas-bug`.
     ```bash

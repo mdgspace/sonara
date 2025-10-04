@@ -19,8 +19,8 @@ Sonara is a web-based audio synthesizer that allows users to create and manipula
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/mdgspace/web-audio-synthesizer.git
-   cd web-audio-synthesizer
+   git clone https://github.com/mdgspace/sonara.git
+   cd sonara
    ```
 
 2. Install dependencies:

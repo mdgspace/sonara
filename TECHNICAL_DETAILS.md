@@ -1,4 +1,4 @@
-# web-audio-synthesizer
+# Sonara - A web based Audio Synthesizer
 
 Web based audio synthesizer plugin that leverages native speed Digital Signal Processing (DSP) offered by C++ Web Assembly built right into the frontend of the synthesizer.
 
@@ -142,7 +142,7 @@ Compression evens out the volume of audio, making loud parts quieter and quiet p
 
 # Developer Notes
 
-The following are detailed notes that describe and document technologies used to build web-audio-sythesizer.
+The following are detailed notes that describe and document technologies used to build Sonara.
 
 ## Pulse-Code Modulation (PCM)
 
