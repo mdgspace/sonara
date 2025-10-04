@@ -25,7 +25,7 @@ const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, curves,
         } else {
             canvasX = ((node.x - xRange[0]) / (xRange[1] - xRange[0])) * width;
         }
-        const canvasY = node.y * height;
+        const canvasY = (1 - node.y) * height;
         return { x: canvasX, y: canvasY };
     }, [width, height, xRange, isLogarithmic, logXRange]);
 
@@ -46,7 +46,7 @@ const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, curves,
 
         const mousePos = getMousePos(e);
         const clampedCanvasY = Math.max(0, Math.min(height, mousePos.y));
-        const normalizedY = clampedCanvasY / height;
+        const normalizedY = 1 - (clampedCanvasY / height);
 
         let newNodeX;
         const isFirstNode = draggingNodeIndex === 0;
@@ -90,14 +90,17 @@ const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, curves,
         const targetConnectorIndex = nodes.findIndex((node, i) =>
             nodes[i + 1] && logicalX > node.x && logicalX < nodes[i + 1].x
         );
-        if (targetConnectorIndex === -1) return;
-        const currentShape = curves[targetConnectorIndex];
-        const scrollDirection = -Math.sign(e.deltaY);
-        const shapeChange = scrollDirection * style.shapeSpeed;
-        const newShape = Math.max(-1, Math.min(1, currentShape + shapeChange));
 
-        onCurvesChange(curves.map((shape, i) => i === targetConnectorIndex ? newShape : shape));
-    }, [getMousePos, width, xRange, nodes, curves, onCurvesChange, isLogarithmic, logXRange]);
+        if (targetConnectorIndex === -1) return;
+
+        onCurvesChange(prevCurves => {
+            const currentShape = prevCurves[targetConnectorIndex];
+            const scrollDirection = -Math.sign(e.deltaY);
+            const shapeChange = scrollDirection * style.shapeSpeed;
+            const newShape = Math.max(-1, Math.min(1, currentShape + shapeChange));
+            return prevCurves.map((shape, i) => i === targetConnectorIndex ? newShape : shape);
+        });
+    }, [getMousePos, width, xRange, nodes, onCurvesChange, isLogarithmic, logXRange]);
 
     return { handleMouseDown, handleMouseMove, handleMouseUp, handleWheel };
 };

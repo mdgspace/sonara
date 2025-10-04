@@ -77,6 +77,7 @@ function Sonara() {
                 width={displayWidth}
                 height={displayHeight}
                 freqs={rawwave}
+                wasmModule={wasmModule}
             />
         </div>
     );

@@ -6,8 +6,8 @@ import { style } from '../constants/theme';
 
 function Display(props) {
     const canvasRef = useRef(null);
-    useCanvasDrawing(canvasRef, props);
     const eventHandlers = useCanvasInteraction(canvasRef, props);
+    useCanvasDrawing(canvasRef, { ...props, onWheel: eventHandlers.handleWheel });
 
     return (
         <canvas
@@ -19,7 +19,6 @@ function Display(props) {
             onMouseMove={eventHandlers.handleMouseMove}
             onMouseUp={eventHandlers.handleMouseUp}
             onMouseLeave={eventHandlers.handleMouseUp}
-            onWheel={eventHandlers.handleWheel}
         />
     );
 }

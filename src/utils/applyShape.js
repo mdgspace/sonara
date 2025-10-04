@@ -7,11 +7,10 @@
  * @returns {number} The transformed value, from 0 to 1.
  */
 export const applyShape = (t, shape) => {
-    // Clamp shape to prevent singularity at 1 and -1
-    const s = Math.max(-0.99999, Math.min(0.99999, shape));
-
-    if (s === 0) return t; // Linear
-
-    const k = 2 * s / (1 - s);
-    return (1 + k) * t / (1 + k * t);
+    if (shape === 0) {
+        return 0; // No curve, so the offset from the straight line is 0.
+    }
+    // This formula creates a parabolic curve that is 0 at t=0 and t=1, and has a maximum/minimum of 1/-1 at t=0.5.
+    // The `shape` parameter scales this curve.
+    return shape * 4 * (t - t * t);
 };
