@@ -19,4 +19,5 @@ EMSCRIPTEN_BINDINGS(sonara_dsp_module) {
     function("applyShape", &applyShape);
     function("applyEnvelope", &applyEnvelope);
     function("generatePcmData", &generatePcmData);
+    function("createWaveform", &createWaveform);
 }

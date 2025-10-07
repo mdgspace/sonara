@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Display from './Display';
 
 /**
@@ -8,9 +8,10 @@ import Display from './Display';
  * @param {{
  *   wasmModule: any,
  *   width: number,
- *   height: number}}
+ *   height: number,
+ *   setEq: (eq: { nodes: any[], curves: number[] }) => void}}
  */
-function EQ({ wasmModule, width, height, freqs: liveFreqs }) {
+function EQ({ wasmModule, width, height, freqs: liveFreqs, setEq }) {
     const xRange = [20, 20000];
 
     // Initialize nodes and curves for the EQ
@@ -24,6 +25,11 @@ function EQ({ wasmModule, width, height, freqs: liveFreqs }) {
 
     const [nodes, setNodes] = useState(initialNodes);
     const [curves, setCurves] = useState(initialCurves);
+
+    // Update the parent component's state when nodes or curves change.
+    useEffect(() => {
+        setEq({ nodes, curves });
+    }, [nodes, curves, setEq]);
 
     return (
         <div className='EQ'>
@@ -53,7 +59,15 @@ function EQ({ wasmModule, width, height, freqs: liveFreqs }) {
                         pair.delete();
                     });
 
-                    const result = wasmModule.applyEnvelope(nodesVec, curvesVec, freqsVec);
+                    const wasmResult = wasmModule.applyEnvelope(nodesVec, curvesVec, freqsVec);
+
+                    // Convert WASM vector to JS array
+                    const result = [];
+                    for (let i = 0; i < wasmResult.size(); i++) {
+                        const pair = wasmResult.get(i);
+                        result.push([pair.get(0), pair.get(1)]);
+                    }
+                    wasmResult.delete();
 
                     // Clean up the memory allocated by Embind
                     nodesVec.delete();

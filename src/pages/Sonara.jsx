@@ -3,9 +3,7 @@ import EQ from '../components/Equalizers';
 import Keys from '../components/Keys';
 import ADSR from '../components/Adsr';
 import { Voice } from '../audio/Voice';
-
-import { applyEnvelope } from '../utils/applyEnvelope';
-
+ 
 function Sonara() {
     const displayWidth = 800;
     const displayHeight = 250;
@@ -14,8 +12,8 @@ function Sonara() {
     const [wasmModule, setWasmModule] = useState(null);
     const [rawwave, setRawwave] = useState([]);
     const audioContextRef = useRef(null);
-    const voicesRef = useRef({});
-    const [eq, setEq] = useState({ nodes: [], curves: [] });
+    const voicesRef = useRef({}); 
+    const [eq, setEq] = useState(null);
 
     useEffect(() => {
         async function initWasmModule() {
@@ -51,7 +49,37 @@ function Sonara() {
             voicesRef.current[note].stop();
         }
 
-        const freq = applyEnvelope(eq.nodes, eq.curves, rawWave);
+        let freq = rawWave;
+        if (eq && eq.nodes && eq.curves && wasmModule) {
+            const nodesVec = new wasmModule.VectorNode();
+            eq.nodes.forEach(node => nodesVec.push_back(node));
+
+            const curvesVec = new wasmModule.VectorDouble();
+            eq.curves.forEach(curve => curvesVec.push_back(curve));
+
+            const freqsVec = new wasmModule.VectorVectorDouble();
+            rawWave.forEach(freqPair => {
+                const pair = new wasmModule.VectorDouble();
+                pair.push_back(freqPair[0]);
+                pair.push_back(freqPair[1]);
+                freqsVec.push_back(pair);
+                pair.delete();
+            });
+ 
+            const wasmFreq = wasmModule.applyEnvelope(nodesVec, curvesVec, freqsVec);
+            // Convert the wasm vector to a JS array before passing to Voice
+            const jsFreq = [];
+            for (let i = 0; i < wasmFreq.size(); i++) {
+                const pair = wasmFreq.get(i);
+                jsFreq.push([pair.get(0), pair.get(1)]);
+            }
+            freq = jsFreq;
+            wasmFreq.delete();
+
+            nodesVec.delete();
+            curvesVec.delete();
+            freqsVec.delete();
+        }
         setRawwave(rawWave);
 
         const voice = new Voice(audioContextRef.current, wasmModule, freq, adsr);
@@ -69,7 +97,11 @@ function Sonara() {
     return (
         <div className="App">
             <h1>Sonara</h1>
-            <Keys onNoteDown={handleNoteDown} onNoteUp={handleNoteUp} />
+            <Keys 
+                onNoteDown={handleNoteDown} 
+                onNoteUp={handleNoteUp} 
+                wasmModule={wasmModule}
+            />
             <ADSR adsr={adsr} setAdsr={setAdsr} />
             <EQ
                 setEq={setEq}

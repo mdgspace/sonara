@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <string>
 
 // A struct to hold node data, similar to the JS object {x, y}
 struct Node {
@@ -22,5 +23,10 @@ std::vector<int16_t> generatePcmData(
     const std::vector<std::vector<double>>& freqAmpPairs,
     int sampleRate,
     double duration);
+
+std::vector<std::vector<double>> createWaveform(
+    const std::string& waveformType, 
+    double baseFreq
+);
 
 #endif // DSP_HPP
