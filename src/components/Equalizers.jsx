@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Display from './Display';
 
 /**
@@ -25,6 +25,36 @@ function EQ({ wasmModule, width, height, freqs: liveFreqs }) {
     const [nodes, setNodes] = useState(initialNodes);
     const [curves, setCurves] = useState(initialCurves);
 
+    const processedFreqs = useMemo(() => {
+        if (!wasmModule || !liveFreqs) return [];
+
+        let nodesVec, curvesVec, freqsVec;
+        try {
+            // Manually convert JS arrays to the Embind Vector types.
+            nodesVec = new wasmModule.VectorNode();
+            nodes.forEach(node => nodesVec.push_back(node));
+
+            curvesVec = new wasmModule.VectorDouble();
+            curves.forEach(curve => curvesVec.push_back(curve));
+
+            freqsVec = new wasmModule.VectorVectorDouble();
+            (liveFreqs || []).forEach(freqPair => {
+                const pair = new wasmModule.VectorDouble();
+                pair.push_back(freqPair[0]);
+                pair.push_back(freqPair[1]);
+                freqsVec.push_back(pair);
+                pair.delete();
+            });
+
+            return wasmModule.applyEnvelope(nodesVec, curvesVec, freqsVec);
+        } finally {
+            // Ensure memory is always freed, even if an error occurs.
+            if (nodesVec) nodesVec.delete();
+            if (curvesVec) curvesVec.delete();
+            if (freqsVec) freqsVec.delete();
+        }
+    }, [wasmModule, nodes, curves, liveFreqs]);
+
     return (
         <div className='EQ'>
             <h3>Frequency EQ</h3>
@@ -36,32 +66,7 @@ function EQ({ wasmModule, width, height, freqs: liveFreqs }) {
                 curves={curves}
                 onNodesChange={setNodes}
                 onCurvesChange={setCurves}
-                freqs={wasmModule ? (() => {
-                    // Manually convert JS arrays to the Embind Vector types.
-                    const nodesVec = new wasmModule.VectorNode();
-                    nodes.forEach(node => nodesVec.push_back(node));
-
-                    const curvesVec = new wasmModule.VectorDouble();
-                    curves.forEach(curve => curvesVec.push_back(curve));
-
-                    const freqsVec = new wasmModule.VectorVectorDouble();
-                    (liveFreqs || []).forEach(freqPair => {
-                        const pair = new wasmModule.VectorDouble();
-                        pair.push_back(freqPair[0]);
-                        pair.push_back(freqPair[1]);
-                        freqsVec.push_back(pair);
-                        pair.delete();
-                    });
-
-                    const result = wasmModule.applyEnvelope(nodesVec, curvesVec, freqsVec);
-
-                    // Clean up the memory allocated by Embind
-                    nodesVec.delete();
-                    curvesVec.delete();
-                    freqsVec.delete();
-
-                    return result;
-                })() : []}
+                freqs={processedFreqs}
                 isLogarithmic={true}
                 wasmModule={wasmModule}
             />
