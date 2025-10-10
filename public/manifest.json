@@ -1,0 +1,8 @@
+{
+  "name": "Sonara Synth",
+  "short_name": "Sonara",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000",
+  "theme_color": "#00ff88"
+}

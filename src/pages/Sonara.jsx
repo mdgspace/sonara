@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import EQ from '../components/Equalizers';
 import Keys from '../components/Keys';
 import ADSR from '../components/Adsr';
+import PresetControls from '../components/PresetControls';
 import { Voice } from '../audio/Voice';
 
 import { applyEnvelope } from '../utils/applyEnvelope';
@@ -10,12 +11,28 @@ function Sonara() {
     const displayWidth = 800;
     const displayHeight = 250;
 
-    const [adsr, setAdsr] = useState({ attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.5 });
+    const DEFAULT_ADSR = { attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.5 };
+    const DEFAULT_EQ = { nodes: [], curves: [] };
+    const DEFAULT_WAVEFORM = 'sine';
+    const DEFAULT_OCTAVE = 4;
+
+    const [adsr, setAdsr] = useState(DEFAULT_ADSR);
+    const [eq, setEq] = useState(DEFAULT_EQ);
+    const [waveform, setWaveform] = useState(DEFAULT_WAVEFORM);
+    const [octave, setOctave] = useState(DEFAULT_OCTAVE);
     const [wasmModule, setWasmModule] = useState(null);
     const [rawwave, setRawwave] = useState([]);
+
     const audioContextRef = useRef(null);
     const voicesRef = useRef({});
-    const [eq, setEq] = useState({ nodes: [], curves: [] });
+
+    const synthState = {
+    adsr,
+    eq,
+    waveform,
+    octave,
+    rawwave,
+    };
 
     useEffect(() => {
         async function initWasmModule() {
@@ -66,9 +83,20 @@ function Sonara() {
         }
     };
 
+    const handlePresetLoad = (preset) => {
+    if (preset.adsr) setAdsr(preset.adsr);
+    if (preset.eq) setEq(preset.eq);
+    if (preset.waveform) setWaveform(preset.waveform);
+    if (preset.octave) setOctave(preset.octave);
+    if (preset.rawwave) setRawwave(preset.rawwave);
+    };
+
     return (
         <div className="App">
             <h1>Sonara</h1>
+
+            <PresetControls synthState={synthState} onPresetLoad={handlePresetLoad} /> 
+
             <Keys onNoteDown={handleNoteDown} onNoteUp={handleNoteUp} />
             <ADSR adsr={adsr} setAdsr={setAdsr} />
             <EQ
