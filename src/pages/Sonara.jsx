@@ -9,7 +9,7 @@ import { applyEnvelope } from '../utils/applyEnvelope';
 
 function Sonara() {
     const displayWidth = 800;
-    const displayHeight = 250;
+    const displayHeight = 350;
 
     const DEFAULT_ADSR = { attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.5 };
     const DEFAULT_EQ = { nodes: [], curves: [] };
