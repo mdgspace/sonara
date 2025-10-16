@@ -76,3 +76,18 @@
     border-width: 1px !important;
   }
 }
+
+// new style adding
+.preset-controls button {
+  background-color: #1f1f1f;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.preset-controls button:hover {
+  background-color: #3c3c3c;
+}

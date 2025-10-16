@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import EQ from '../components/Equalizers';
 import Keys from '../components/Keys';
 import ADSR from '../components/Adsr';
+import PresetControls from '../components/PresetControls';
 import { Voice } from '../audio/Voice';
 
 import { applyEnvelope } from '../utils/applyEnvelope';
@@ -10,34 +11,48 @@ function Sonara() {
     const displayWidth = 800;
     const displayHeight = 350;
 
-    const [adsr, setAdsr] = useState({ attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.5 });
+    const DEFAULT_ADSR = { attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.5 };
+    const DEFAULT_EQ = { nodes: [], curves: [] };
+    const DEFAULT_WAVEFORM = 'sine';
+    const DEFAULT_OCTAVE = 4;
+
+    const [adsr, setAdsr] = useState(DEFAULT_ADSR);
+    const [eq, setEq] = useState(DEFAULT_EQ);
+    const [waveform, setWaveform] = useState(DEFAULT_WAVEFORM);
+    const [octave, setOctave] = useState(DEFAULT_OCTAVE);
     const [wasmModule, setWasmModule] = useState(null);
-    const [rawwave, setRawwave] = useState([]);
+    const [rawWave, setRawWave] = useState([]);
+
     const audioContextRef = useRef(null);
     const voicesRef = useRef({});
-    const [eq, setEq] = useState({ nodes: [], curves: [] });
+
+    const synthState = {
+    adsr,
+    eq,
+    waveform,
+    octave,
+    rawWave,
+    };
 
     useEffect(() => {
-        async function initWasmModule() {
-            const wasm = await window.Module({
-                locateFile: () => "/dsp.wasm",
-            });
-            setWasmModule(wasm);
-        }
+  async function initWasmModule() {
+    if (typeof window.Module === "function") {
+      const wasm = await window.Module({
+        locateFile: () => "/dsp.wasm",
+      });
+      setWasmModule(wasm);
+    } else {
+      console.warn("⚠️ WASM module not loaded — DSP features disabled in dev mode.");
+    }
+  }
 
-        if (!audioContextRef.current) {
-            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-        }
+  if (!audioContextRef.current) {
+    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+  }
 
-        initWasmModule();
+  initWasmModule();
+}, []);
 
-        return () => {
-            if (audioContextRef.current) {
-                audioContextRef.current.close();
-                audioContextRef.current = null;
-            }
-        };
-    }, []);
 
 
     const handleNoteDown = async (note, rawWave) => {
@@ -52,9 +67,8 @@ function Sonara() {
         }
 
         const freq = applyEnvelope(eq.nodes, eq.curves, rawWave);
-        setRawwave(rawWave);
-
-        const voice = new Voice(audioContextRef.current, wasmModule, freq, adsr);
+        setRawWave(rawWave);
+        const voice = new Voice(audioContextRef.current, wasmModule, freq, adsr, waveform, octave);
         voicesRef.current[note] = voice;
         voice.start();
     };
@@ -66,17 +80,45 @@ function Sonara() {
         }
     };
 
+    const handlePresetLoad = (preset) => {
+  try {
+    if (preset.adsr) setAdsr(preset.adsr);
+    if (preset.eq) setEq(preset.eq);
+    if (preset.waveform) setWaveform(preset.waveform);
+    if (typeof preset.octave !== 'undefined') setOctave(preset.octave);
+    if (preset.rawWave) setRawWave(preset.rawWave);
+
+    // log for debugging
+    console.log('Preset applied:', preset);
+    alert('✅ Preset loaded and applied successfully!');
+  } catch (error) {
+    console.error('Error applying preset:', error);
+    alert('❌ Failed to apply preset.');
+  }
+};
+
     return (
         <div className="App">
             <h1>Sonara</h1>
-            <Keys onNoteDown={handleNoteDown} onNoteUp={handleNoteUp} />
+
+            <PresetControls synthState={synthState} onPresetLoad={handlePresetLoad} /> 
+
+            <Keys
+              onNoteDown={handleNoteDown}
+              onNoteUp={handleNoteUp}
+              waveform={waveform}
+              setWaveform={setWaveform}
+              octave={octave}
+              setOctave={setOctave}
+            />
+
             <ADSR adsr={adsr} setAdsr={setAdsr} />
             <EQ
                 setEq={setEq}
                 eq={eq}
                 width={displayWidth}
                 height={displayHeight}
-                freqs={rawwave}
+                freqs={rawWave}
                 wasmModule={wasmModule}
             />
         </div>

@@ -3,9 +3,8 @@ import { createWaveform } from '../utils/createWaveform';
 import { noteFrequencies, keyMap, notes } from '../constants/keys';
 import { waveimages } from '../constants/path';
 
-function Keys({ onNoteDown, onNoteUp }) {
-    const [waveform, setWaveform] = useState('sawtooth');
-    const [octave, setOctave] = useState(4);
+function Keys({ onNoteDown, onNoteUp, waveform, setWaveform, octave, setOctave }) {
+
     const [activeKeys, setActiveKeys] = useState(new Set());
 
     // Handle key press to play a note
