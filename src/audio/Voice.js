@@ -3,11 +3,13 @@
  * from note-on to note-off, including the ADSR envelope.
  */
 export class Voice {
-    constructor(audioContext, wasmModule, frequencies, adsr) {
+    constructor(audioContext, wasmModule, frequencies, adsr, waveform = 'sine', octave = 4) {
         this.audioContext = audioContext;
         this.wasmModule = wasmModule;
         this.frequencies = frequencies;
         this.adsr = adsr;
+        this.waveform = waveform;
+        this.octave = octave;
 
         // Create the GainNode for ADSR volume control
         this.gainNode = this.audioContext.createGain();
@@ -26,6 +28,7 @@ export class Voice {
         const freqAmpPairs = new this.wasmModule.VectorVectorDouble();
         this.frequencies.forEach(([freq, amp]) => {
             const pair = new this.wasmModule.VectorDouble();
+             const adjustedFreq = freq * Math.pow(2, this.octave - 4);
             pair.push_back(freq);
             pair.push_back(amp);
             freqAmpPairs.push_back(pair);

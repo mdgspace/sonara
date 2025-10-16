@@ -21,7 +21,7 @@ function Sonara() {
     const [waveform, setWaveform] = useState(DEFAULT_WAVEFORM);
     const [octave, setOctave] = useState(DEFAULT_OCTAVE);
     const [wasmModule, setWasmModule] = useState(null);
-    const [rawwave, setRawwave] = useState([]);
+    const [rawWave, setRawWave] = useState([]);
 
     const audioContextRef = useRef(null);
     const voicesRef = useRef({});
@@ -31,30 +31,28 @@ function Sonara() {
     eq,
     waveform,
     octave,
-    rawwave,
+    rawWave,
     };
 
     useEffect(() => {
-        async function initWasmModule() {
-            const wasm = await window.Module({
-                locateFile: () => "/dsp.wasm",
-            });
-            setWasmModule(wasm);
-        }
+  async function initWasmModule() {
+    if (typeof window.Module === "function") {
+      const wasm = await window.Module({
+        locateFile: () => "/dsp.wasm",
+      });
+      setWasmModule(wasm);
+    } else {
+      console.warn("⚠️ WASM module not loaded — DSP features disabled in dev mode.");
+    }
+  }
 
-        if (!audioContextRef.current) {
-            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-        }
+  if (!audioContextRef.current) {
+    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+  }
 
-        initWasmModule();
+  initWasmModule();
+}, []);
 
-        return () => {
-            if (audioContextRef.current) {
-                audioContextRef.current.close();
-                audioContextRef.current = null;
-            }
-        };
-    }, []);
 
 
     const handleNoteDown = async (note, rawWave) => {
@@ -69,9 +67,8 @@ function Sonara() {
         }
 
         const freq = applyEnvelope(eq.nodes, eq.curves, rawWave);
-        setRawwave(rawWave);
-
-        const voice = new Voice(audioContextRef.current, wasmModule, freq, adsr);
+        setRawWave(rawWave);
+        const voice = new Voice(audioContextRef.current, wasmModule, freq, adsr, waveform, octave);
         voicesRef.current[note] = voice;
         voice.start();
     };
@@ -84,12 +81,21 @@ function Sonara() {
     };
 
     const handlePresetLoad = (preset) => {
+  try {
     if (preset.adsr) setAdsr(preset.adsr);
     if (preset.eq) setEq(preset.eq);
     if (preset.waveform) setWaveform(preset.waveform);
-    if (preset.octave) setOctave(preset.octave);
-    if (preset.rawwave) setRawwave(preset.rawwave);
-    };
+    if (typeof preset.octave !== 'undefined') setOctave(preset.octave);
+    if (preset.rawWave) setRawWave(preset.rawWave);
+
+    // log for debugging
+    console.log('Preset applied:', preset);
+    alert('✅ Preset loaded and applied successfully!');
+  } catch (error) {
+    console.error('Error applying preset:', error);
+    alert('❌ Failed to apply preset.');
+  }
+};
 
     return (
         <div className="App">
@@ -97,14 +103,22 @@ function Sonara() {
 
             <PresetControls synthState={synthState} onPresetLoad={handlePresetLoad} /> 
 
-            <Keys onNoteDown={handleNoteDown} onNoteUp={handleNoteUp} />
+            <Keys
+              onNoteDown={handleNoteDown}
+              onNoteUp={handleNoteUp}
+              waveform={waveform}
+              setWaveform={setWaveform}
+              octave={octave}
+              setOctave={setOctave}
+            />
+
             <ADSR adsr={adsr} setAdsr={setAdsr} />
             <EQ
                 setEq={setEq}
                 eq={eq}
                 width={displayWidth}
                 height={displayHeight}
-                freqs={rawwave}
+                freqs={rawWave}
                 wasmModule={wasmModule}
             />
         </div>
