@@ -1,5 +1,6 @@
-import { notes } from '@/constants/keys.js';
+import { notes } from './keys';
 
+// IAccept only 'C', 'D', 'E', etc., from the 'notes' array.
 type Note = (typeof notes)[number];
 
 export interface SequencerStep {
