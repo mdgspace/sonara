@@ -1,8 +1,9 @@
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Sonara from './pages/Sonara';
 import './App.css';
 
-function App() {
+const App: React.FC = () => {
     return (
         <Router>
             <Routes>
@@ -10,6 +11,6 @@ function App() {
             </Routes>
         </Router>
     );
-}
+};
 
 export default App;
