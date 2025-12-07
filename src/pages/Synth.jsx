@@ -16,8 +16,8 @@ function Synth() {
     const [eq, setEq] = useState(null);
 
     useEffect(() => {
-	async function initWasmModue() {
-            const wasm = window.Module({
+	async function initWasmModule() {
+            const wasm = await window.Module({
                 locateFile: () => "/dsp.wasm",
             });
             setWasmModule(wasm);

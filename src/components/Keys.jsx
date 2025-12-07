@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { noteFrequencies, keyMap, notes } from '../constants/keys';
-import { waveimages } from '../constants/path';
+import { noteFrequencies, keyMap, notes, waveimages } from '../static';
 
 function Keys({ onNoteDown, onNoteUp, wasmModule }) {
-    const [waveform, setWaveform] = useState('sawtooth');
+    const [waveform, setWaveform] = useState('sine');
     const [octave, setOctave] = useState(4);
     const [activeKeys, setActiveKeys] = useState(new Set());
 

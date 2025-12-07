@@ -1,10 +1,11 @@
 #include "dsp.hpp"
 #include <string>    // For std::string
 #include <vector>    // For std::vector
+#include <algorithm>
 
 using namespace std;
 
-vector<vector<double>> createWaveform(const string& waveformType,double baseFreq) {
+vector<vector<double>> createWaveform(const string& type,double baseFreq) {
     
     vector<vector<double>> harmonics;
 
