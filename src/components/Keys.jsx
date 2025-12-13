@@ -1,11 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { noteFrequencies, keyMap, notes, waveimages } from '../static';
+import useSimpleEventHighlighter from './KeyHighlighter';
 
-function Keys({ onNoteDown, onNoteUp, wasmModule }) {
+function Keys({ onNoteDown, onNoteUp, wasmModule, event=[], sequence }) {
+    const { highlightedKey, start } = useSimpleEventHighlighter(event);
+    
+    const handlePlay = () => {
+        // Sync start with your audio: audioStartWallMs = performance.now() + (desired offset)
+        start(performance.now());
+        // whenever this start is called, the highlighted playback on keys starts
+    };
     const [waveform, setWaveform] = useState('sine');
     const [octave, setOctave] = useState(4);
     const [activeKeys, setActiveKeys] = useState(new Set());
-
+    const [toggle, setToggle] = useState(false);
     // Handle key press to play a note
     const handleKeyDown = useCallback((note) => {
         const baseFreq = noteFrequencies[note] * Math.pow(2, octave - 4);
@@ -92,14 +100,17 @@ function Keys({ onNoteDown, onNoteUp, wasmModule }) {
             </div>
 
             {/* Render piano keys */}
+            <input type="checkbox" id="toggle" checked={toggle} onChange={() => setToggle(!toggle)}/>
             <div className="piano-keys">
+                <button onClick={handlePlay} disabled={sequence.length === 0}>Play(AI)</button>
+
                 {notes.map((note) => (
                     <div
                         key={note}
-                        className={`key ${activeKeys.has(note) ? 'active' : ''}`}
-                        onMouseDown={() => handleKeyDown(note)}
-                        onMouseUp={() => handleKeyUp(note)}
-                        onMouseLeave={() => handleKeyUp(note)}
+                        className={`key ${activeKeys.has(note) ? 'active' : ''} ${highlightedKey === note ? "black" : ""}`} // keys become black during the schedule evnt time
+                        onMouseDown={() => {toggle ? {} : handleKeyDown(note)}}
+                        onMouseUp={() => {toggle ? {} : handleKeyUp(note)}}
+                        onMouseLeave={() => {toggle ? {} : handleKeyUp(note)}}
                     >
                         <span className="key-label-note">{note}</span>
                         <span className="key-label-binding">{Object.keys(keyMap).find(k => keyMap[k] === note).toUpperCase()}</span>

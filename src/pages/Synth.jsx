@@ -1,13 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import EQ from '../components/Equalizers';
 import Keys from '../components/Keys';
 import ADSR from '../components/Adsr';
+import MusicSequenceGenerator from '../components/AI_Integration';
 import { Voice } from '../audio/Voice';
  
 function Synth() {
     const displayWidth = 800;
     const displayHeight = 250;
 
+    const [sequence, setSequence] = useState([]);
+    const memoEvents = useMemo(() => sequence.events || [], [sequence.events]);
     const [adsr, setAdsr] = useState({ attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.5 });
     const [wasmModule, setWasmModule] = useState(null);
     const [rawwave, setRawwave] = useState([]);
@@ -97,10 +100,15 @@ function Synth() {
     return (
         <div className="App">
             <h1>Sonara</h1>
+            <MusicSequenceGenerator
+                setSequence={setSequence}
+            />
             <Keys 
                 onNoteDown={handleNoteDown} 
                 onNoteUp={handleNoteUp} 
                 wasmModule={wasmModule}
+                event={memoEvents} 
+                sequence={sequence}
             />
             <ADSR adsr={adsr} setAdsr={setAdsr} />
             <EQ
