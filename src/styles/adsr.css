@@ -17,7 +17,7 @@
   text-align: left;
   margin-top: 0;
   margin-bottom: 10px;
-  font-size: 1.2rem;
+  font-size: 2.2rem;
   text-shadow: 0 0 5px rgba(234, 99, 140, 0.2);
 }
 
@@ -44,7 +44,7 @@
 .adsr-control-group label {
   color: #ea638c;
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 1.7rem;
   margin-right: 10px;
 }
 
@@ -75,7 +75,7 @@
 
 .adsr-control-group span {
   color: #ffd9da;
-  font-size: 0.8rem;
+  font-size: 1.5rem;
   margin-left: 10px;
   text-align: center;
   font-weight: 300;

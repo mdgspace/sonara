@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Ink:wght@100..900&family=Fleur+De+Leah&display=swap');
 @import url("styles/ai-integration.css");
 @import url("styles/grid.css");
 @import url("styles/adsr.css");
@@ -16,7 +17,7 @@
   height: 100vh;
   width: 100vw;
   color: #ffd9da;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Bitcount Ink', cursive;
   overflow: auto;
   display: flex;
   flex-direction: column;
@@ -46,8 +47,9 @@
     text-align: center;
     color: #ea638c;
     text-shadow: 0 0 10px rgba(234, 99, 140, 0.3);
-    font-size: 2.5rem;
+    font-size: 6rem;
     letter-spacing: 2px;
+    font-family: 'Fleur De Leah', cursive;
 }
 
 .ai-integration-styles {

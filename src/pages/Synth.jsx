@@ -12,6 +12,7 @@ function Synth() {
     const [sequence, setSequence] = useState([]);
     const memoEvents = useMemo(() => sequence.events || [], [sequence.events]);
     const [adsr, setAdsr] = useState({ attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.5 });
+    const [waveform, setWaveform] = useState('sine');
     const [wasmModule, setWasmModule] = useState(null);
     const [rawwave, setRawwave] = useState([]);
     const audioContextRef = useRef(null);
@@ -105,6 +106,8 @@ function Synth() {
                 </div>
                 <MusicSequenceGenerator
                     setSequence={setSequence}
+                    setWaveform={setWaveform}
+                    setAdsr={setAdsr}
                     className="ai-integration"
                 />
                 <Keys 
@@ -113,6 +116,8 @@ function Synth() {
                     wasmModule={wasmModule}
                     event={memoEvents} 
                     sequence={sequence}
+                    waveform={waveform}
+                    setWaveform={setWaveform}
                 />
                 <ADSR 
                     adsr={adsr} 

@@ -1,12 +1,12 @@
 .ai-integration-styles h2 {
-  font-size: 1.2rem;
+  font-size: 1.9rem;
   text-align: left;
   margin-bottom: 5px;
   color: #ea638c;
 }
 
 .ai-integration-styles p {
-  font-size: 0.9rem;
+  font-size: 1rem;
   margin-bottom: 5px;
   color: #ffd9da;
 }
@@ -42,14 +42,6 @@
   margin-top: 10px;
   border: none;
   border-radius: 4px;
-}
-
-.ai-integration-styles h3 {
-    font-size: 1rem;
-    text-align: left;
-    margin-top: 10px;
-    margin-bottom: 5px;
-    color: #ea638c;
 }
 
 .ai-integration-styles pre {

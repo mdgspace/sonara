@@ -43,7 +43,7 @@ CONSTRAINTS:
 };
 
 
-function MusicSequenceGenerator({ setSequence, className}) {
+function MusicSequenceGenerator({ setSequence, className, setWaveform, setAdsr }) {
   const updateSequence = (newsequence) => {
     setSequence(newsequence);
     console.log(newsequence)
@@ -113,6 +113,11 @@ function MusicSequenceGenerator({ setSequence, className}) {
       // this is result array so later we can just iterate and display instead of manually writting all elements
       setResult([final_json.title, final_json.tempo, final_json.settings.octave, final_json.settings.wave, final_json.settings.adsr.attack, final_json.settings.adsr.decay, final_json.settings.adsr.sustain, final_json.settings.adsr.release])
       updateSequence(final_json);
+      setWaveform(final_json.settings.wave);
+      setAdsr({
+          ...final_json.settings.adsr,
+          sustain: final_json.settings.adsr.sustain / 100
+      });
 
     } catch (err) {
       console.error('Generation Error:', err);
@@ -120,13 +125,11 @@ function MusicSequenceGenerator({ setSequence, className}) {
     } finally {
       setLoading(false);
     }
-  }, [userText]); // Recreate function if userText changes
+  }, [userText, setSequence, setWaveform, setAdsr]); // Recreate function if userText changes
 
   return (
     <div className={`ai-integration-styles ${className}`}>
       <h2>AI Music Sequence Generator</h2>
-      <p>Enter a prompt (e.g., "A short, sad melody in C minor with a sawtooth wave"):</p>
-
       <input
         type="text"
         value={userText}
@@ -147,19 +150,6 @@ function MusicSequenceGenerator({ setSequence, className}) {
         <blockquote>
           Error: {error}
         </blockquote>
-      )}
-
-      {result && (
-        <>
-          <h3>You can use the AI recommendations</h3>
-          <pre>
-            <ul>
-              {settings.map((item, index) => (
-                <li key={index}>{item}:{result[index]}</li>
-              ))}
-            </ul>
-          </pre>
-        </>
       )}
     </div>
   );

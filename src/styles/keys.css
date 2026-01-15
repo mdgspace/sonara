@@ -24,12 +24,13 @@
 }
 
 .control-group select {
+  font-family: 'Bitcount Ink';
   background: #1b2021;
   color: #ffd9da;
-  border: none;
+  border: 0.2px solid white;
   border-radius: 4px;
   padding: 4px 8px;
-  font-size: 0.9rem;
+  font-size: 1.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -148,7 +149,7 @@
 .key-label-note {
   color: #ffd9da;
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 3.2rem;
   margin-bottom: 5px;
 }
 
@@ -159,7 +160,7 @@
 
 .key-label-binding {
   color: #ea638c;
-  font-size: 0.7rem;
+  font-size: 1.7rem;
   font-weight: 300;
 }
 
