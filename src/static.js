@@ -23,12 +23,12 @@ export const keyMap = { 'z': 'C', 'x': 'D', 'c': 'E', 'v': 'F', 'b': 'G', 'n': '
 export const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 
 export const style = {
-    backgroundColor: "#0f172a",        // Dark blue-black background
-    borderColor: "#2563eb",            // Blue border
-    barColor: "rgba(255, 215, 0, 0.3)", // Golden bars with transparency
-    borderWidth: 2,                    // Slightly thicker border
-    nodeColor: "#ffd700",              // Golden nodes
-    connectorColor: "#ffffff",         // White connectors
+    backgroundColor: "#1b2021",
+    borderColor: "#89023e",
+    barColor: "rgba(234, 99, 140, 0.3)",
+    borderWidth: 0,
+    nodeColor: "#89023e",
+    connectorColor: "#ffd9da",
     connectorWidth: 2,
     nodeRadius: 6,
     hitRadius: 8,

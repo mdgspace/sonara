@@ -43,7 +43,7 @@ CONSTRAINTS:
 };
 
 
-function MusicSequenceGenerator({ setSequence}) {
+function MusicSequenceGenerator({ setSequence, className}) {
   const updateSequence = (newsequence) => {
     setSequence(newsequence);
     console.log(newsequence)
@@ -123,7 +123,7 @@ function MusicSequenceGenerator({ setSequence}) {
   }, [userText]); // Recreate function if userText changes
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto',marginBottom: '30px', border: '1px solid #ccc', borderRadius: '8px',  }}>
+    <div className={`ai-integration-styles ${className}`}>
       <h2>AI Music Sequence Generator</h2>
       <p>Enter a prompt (e.g., "A short, sad melody in C minor with a sawtooth wave"):</p>
 
@@ -132,21 +132,19 @@ function MusicSequenceGenerator({ setSequence}) {
         value={userText}
         onChange={(e) => setUserText(e.target.value)}
         placeholder="Describe the music you want to generate..."
-        style={{ width: '90%', padding: '10px',marginBottom: '15px', border: '1px solid #ddd', borderRadius: '4px' }}
       />
 
 
       <button
         onClick={generateSequence}
         disabled={loading}
-        style={{ padding: '10px 20px', backgroundColor: loading ? '#aaa' : '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
       >
         {loading ? 'Generating...' : 'Generate Music Sequence'}
       </button>
 
 
       {error && (
-        <blockquote style={{ color: 'darkred', backgroundColor: '#ffe0e0', padding: '10px', marginTop: '15px', borderLeft: '5px solid darkred' }}>
+        <blockquote>
           Error: {error}
         </blockquote>
       )}
@@ -154,7 +152,7 @@ function MusicSequenceGenerator({ setSequence}) {
       {result && (
         <>
           <h3>You can use the AI recommendations</h3>
-          <pre style={{ backgroundColor: '#020212ff', padding: '10px', borderRadius: '4px', overflowX: 'auto', border: '1px solid #ddd' }}>
+          <pre>
             <ul>
               {settings.map((item, index) => (
                 <li key={index}>{item}:{result[index]}</li>

@@ -1,18 +1,18 @@
 import React from 'react';
 
-function ADSR({ adsr, setAdsr }) {
+function ADSR({ adsr, setAdsr, className }) {
     // Update ADSR parameter values
     const handleChange = (param, value) => {
         setAdsr(prev => ({ ...prev, [param]: Number(value) }));
     };
 
     return (
-        <div className="adsr-container">
-            <h3>Amplitude Envelope</h3>
+        <div className={`adsr-container ${className}`}>
+            <h3>ADSR</h3>
             <div className="adsr-controls">
                 {/* Attack control */}
-                <div className="control-group">
-                    <label htmlFor="attack">Attack</label>
+                <div className="adsr-control-group">
+                    <label htmlFor="attack">A</label>
                     <input
                         type="range"
                         id="attack"
@@ -25,8 +25,8 @@ function ADSR({ adsr, setAdsr }) {
                     <span>{adsr.attack.toFixed(2)}s</span>
                 </div>
                 {/* Decay control */}
-                <div className="control-group">
-                    <label htmlFor="decay">Decay</label>
+                <div className="adsr-control-group">
+                    <label htmlFor="decay">D</label>
                     <input
                         type="range"
                         id="decay"
@@ -39,8 +39,8 @@ function ADSR({ adsr, setAdsr }) {
                     <span>{adsr.decay.toFixed(2)}s</span>
                 </div>
                 {/* Sustain control */}
-                <div className="control-group">
-                    <label htmlFor="sustain">Sustain</label>
+                <div className="adsr-control-group">
+                    <label htmlFor="sustain">S</label>
                     <input
                         type="range"
                         id="sustain"
@@ -53,8 +53,8 @@ function ADSR({ adsr, setAdsr }) {
                     <span>{(adsr.sustain * 100).toFixed(0)}%</span>
                 </div>
                 {/* Release control */}
-                <div className="control-group">
-                    <label htmlFor="release">Release</label>
+                <div className="adsr-control-group">
+                    <label htmlFor="release">R</label>
                     <input
                         type="range"
                         id="release"

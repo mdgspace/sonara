@@ -11,7 +11,7 @@ import Display from './Display';
  *   height: number,
  *   setEq: (eq: { nodes: any[], curves: number[] }) => void}}
  */
-function EQ({ wasmModule, width, height, freqs: liveFreqs, setEq }) {
+function EQ({ wasmModule, width, height, freqs: liveFreqs, setEq, className }) {
     const xRange = [20, 20000];
 
     // Initialize nodes and curves for the EQ
@@ -57,7 +57,7 @@ function EQ({ wasmModule, width, height, freqs: liveFreqs, setEq }) {
     }, [wasmModule, nodes, curves, liveFreqs]);
 
     return (
-        <div className='EQ'>
+        <div className={`EQ ${className}`}>
             <h3>Frequency EQ</h3>
             <Display
                 width={width}

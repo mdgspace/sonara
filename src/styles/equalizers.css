@@ -1,36 +1,35 @@
 
 .EQ {
-    background: rgba(10, 15, 30, 0.8);
-    border: 2px solid #1e3a8a;
+    background: #1b2021;
+    border: none;
     border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    /* --- Add these three lines to center the content --- */
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    overflow: hidden;
+    height: 100%;
 }
 
 .EQ h3 {
-    color: #ffd700;
-    text-align: center;
+    color: #ea638c;
+    text-align: left;
     margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.4rem;
-    text-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    text-shadow: 0 0 5px rgba(234, 99, 140, 0.2);
     letter-spacing: 1px;
     font-weight: 600;
     width: 100%; /* Ensure heading takes full width for text-align to work well */
 }
 
-
 @media (max-width: 768px) {
     .EQ {
-        padding: 15px;
+        padding: 10px;
     }
 
     .EQ h3 {
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
 }

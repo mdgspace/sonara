@@ -99,26 +99,36 @@ function Synth() {
 
     return (
         <div className="App">
-            <h1>Sonara</h1>
-            <MusicSequenceGenerator
-                setSequence={setSequence}
-            />
-            <Keys 
-                onNoteDown={handleNoteDown} 
-                onNoteUp={handleNoteUp} 
-                wasmModule={wasmModule}
-                event={memoEvents} 
-                sequence={sequence}
-            />
-            <ADSR adsr={adsr} setAdsr={setAdsr} />
-            <EQ
-                setEq={setEq}
-                eq={eq}
-                width={displayWidth}
-                height={displayHeight}
-                freqs={rawwave}
-                wasmModule={wasmModule}
-            />
+            <div className="grid-container">
+                <div className="title">
+                    <h1>Sonara</h1>
+                </div>
+                <MusicSequenceGenerator
+                    setSequence={setSequence}
+                    className="ai-integration"
+                />
+                <Keys 
+                    onNoteDown={handleNoteDown} 
+                    onNoteUp={handleNoteUp} 
+                    wasmModule={wasmModule}
+                    event={memoEvents} 
+                    sequence={sequence}
+                />
+                <ADSR 
+                    adsr={adsr} 
+                    setAdsr={setAdsr}
+                    className="adsr" 
+                />
+                <EQ
+                    setEq={setEq}
+                    eq={eq}
+                    width={displayWidth}
+                    height={displayHeight}
+                    freqs={rawwave}
+                    wasmModule={wasmModule}
+                    className="equalizers"
+                />
+            </div>
         </div>
     );
 }

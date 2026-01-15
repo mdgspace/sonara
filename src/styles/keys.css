@@ -1,90 +1,97 @@
- 
 .keys-container {
-  background: rgba(10, 15, 30, 0.8);
-  border: 2px solid #1e3a8a;
+  display: contents; /* This allows the children to be grid items */
+}
+
+.oscillator {
+  background: #1b2021;
+  border: none;
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
-.settings-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.control-group {
   display: flex;
   flex-direction: column;
-  min-width: 120px;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 
-.control-group label {
-  color: #ffd700;
-  font-weight: bold;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.key-settings {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .control-group select {
-  background: #1a1a2e;
-  color: white;
-  border: 2px solid #2563eb;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 1rem;
+  background: #1b2021;
+  color: #ffd9da;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .control-group select:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+  background-color: #89023e;
 }
 
 .control-group select:focus {
   outline: none;
-  border-color: #ffd700;
-  box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
-}
-
-.waveform-display {
-  flex: 1;
-  text-align: center;
-  min-width: 200px;
+  background-color: #89023e;
+  box-shadow: 0 0 8px rgba(234, 99, 140, 0.4);
 }
 
 .waveform-display img {
-  max-width: 100%;
+  width: 90%;
   height: auto;
-  border: 2px solid #2563eb;
+  border: 0.8px solid #ffd9da;
   border-radius: 8px;
-  box-shadow: 0 0 15px rgba(37, 99, 235, 0.2);
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
+}
+
+.play-ai-button {
+    background-color: #121212;
+    color: #ffd9da;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.play-ai-button:disabled {
+    background-color: #30343f;
+    cursor: not-allowed;
+}
+
+.piano-keys-wrapper {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #1b2021;
+  border: none;
+  border-radius: 12px;
 }
 
 .piano-keys {
   display: flex;
   gap: 2px;
   justify-content: center;
-  padding: 10px 0;
-  background: rgba(26, 26, 46, 0.5);
+  padding: 10px;
+  background: #1b2021;
   border-radius: 8px;
-  border: 1px solid #1e3a8a;
+  width: 100%;
+  height: 100%;
 }
 
 .key {
-  width: 60px;
-  height: 180px;
-  background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
-  border: 2px solid #334155;
+  background: #1b2021;
+  border: none;
   border-radius: 0 0 6px 6px;
+  color: #ffd9da;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -95,20 +102,37 @@
   transition: all 0.1s ease;
   position: relative;
   overflow: hidden;
+  height: 100%;
+  width: 50px;
 }
 
 .key:hover {
-  background: linear-gradient(to bottom, #2d3748 0%, #1a243c 100%);
-  border-color: #4a5568;
+  background: #89023e;
 }
 
-.key.black { background: black; color: white; }
+.key.black {
+  background: #1b2021;
+  color: #ffd9da;
+}
 
 .key.active {
-  background: linear-gradient(to bottom, #ffd700 0%, #f59e0b 100%);
-  border-color: #ffed4e;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-  transform: translateY(2px);
+  background: #ea638c;
+  border-color: #ffd9da;
+  color: #1b2021;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.waveform-display {
+  flex: 1;
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  width: auto;
 }
 
 .key.active::before {
@@ -118,29 +142,29 @@
   left: 0;
   right: 0;
   height: 30%;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 217, 218, 0.1);
 }
 
 .key-label-note {
-  color: white;
+  color: #ffd9da;
   font-weight: bold;
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin-bottom: 5px;
 }
 
 .key.active .key-label-note {
-  color: #000000;
+  color: #1b2021;
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
 }
 
 .key-label-binding {
-  color: #94a3b8;
-  font-size: 0.8rem;
+  color: #ea638c;
+  font-size: 0.7rem;
   font-weight: 300;
 }
 
 .key.active .key-label-binding {
-  color: #1e293b;
+  color: #1b2021;
   font-weight: bold;
 }
 
@@ -156,20 +180,20 @@
   }
   
   .waveform-display {
-    min-width: 150px;
+    min-width: 100px;
   }
   
   .key {
-    width: 40px;
-    height: 120px;
+    width: 30px;
+    height: 100px;
     padding: 5px;
   }
   
   .key-label-note {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
   
   .key-label-binding {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
   }
 }

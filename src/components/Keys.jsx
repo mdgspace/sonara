@@ -69,53 +69,53 @@ function Keys({ onNoteDown, onNoteUp, wasmModule, event=[], sequence }) {
 
     return (
         <div className="keys-container">
-            <div className="settings-row">
-                {/* Waveform selection */}
-                <div className="control-group">
-                    <label htmlFor="osc-type">Waveform</label>
-                    <select id="osc-type" value={waveform} onChange={(e) => setWaveform(e.target.value)}>
-                        <option value="sine">Sine</option>
-                        <option value="square">Square</option>
-                        <option value="sawtooth">Sawtooth</option>
-                        <option value="triangle">Triangle</option>
-                    </select>
-                </div>
-
+            <div className="oscillator">
                 {/* Display selected waveform */}
                 <div className="waveform-display">
                     <img src={waveimages[waveform]} alt={waveform} width="50%" height='50%' />
                 </div>
+                <div className="key-settings">
+                    {/* Waveform selection */}
+                    <div className="control-group">
+                        <select id="osc-type" value={waveform} onChange={(e) => setWaveform(e.target.value)}>
+                            <option value="sine">Sine</option>
+                            <option value="square">Square</option>
+                            <option value="sawtooth">Sawtooth</option>
+                            <option value="triangle">Triangle</option>
+                        </select>
+                    </div>
 
-                {/* Octave selection */}
-                <div className="control-group">
-                    <label htmlFor="octave">Octave</label>
-                    <select id="octave" value={octave} onChange={(e) => setOctave(Number(e.target.value))}>
-                        {[...Array(6)].map((_, i) => (
-                            <option key={i + 3} value={i + 3}>
-                                {i + 3}
-                            </option>
-                        ))}
-                    </select>
+                    {/* Octave selection */}
+                    <div className="control-group">
+                        <select id="octave" value={octave} onChange={(e) => setOctave(Number(e.target.value))}>
+                            {[...Array(6)].map((_, i) => (
+                                <option key={i + 3} value={i + 3}>
+                                    {i + 3}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
             {/* Render piano keys */}
-            <input type="checkbox" id="toggle" checked={toggle} onChange={() => setToggle(!toggle)}/>
-            <div className="piano-keys">
-                <button onClick={handlePlay} disabled={sequence.length === 0}>Play(AI)</button>
+            <div className="piano-keys-wrapper">
+                <div className="piano-keys">
+                    <button className="play-ai-button" onClick={handlePlay} disabled={sequence.length === 0}>Play(AI)</button>
 
-                {notes.map((note) => (
-                    <div
-                        key={note}
-                        className={`key ${activeKeys.has(note) ? 'active' : ''} ${highlightedKey === note ? "black" : ""}`} // keys become black during the schedule evnt time
-                        onMouseDown={() => {toggle ? {} : handleKeyDown(note)}}
-                        onMouseUp={() => {toggle ? {} : handleKeyUp(note)}}
-                        onMouseLeave={() => {toggle ? {} : handleKeyUp(note)}}
-                    >
-                        <span className="key-label-note">{note}</span>
-                        <span className="key-label-binding">{Object.keys(keyMap).find(k => keyMap[k] === note).toUpperCase()}</span>
-                    </div>
-                ))}
+                    {notes.map((note) => (
+                        <div
+                            key={note}
+                            className={`key ${activeKeys.has(note) ? 'active' : ''} ${highlightedKey === note ? "black" : ""}`} // keys become black during the schedule evnt time
+                            onMouseDown={() => {toggle ? {} : handleKeyDown(note)}}
+                            onMouseUp={() => {toggle ? {} : handleKeyUp(note)}}
+                            onMouseLeave={() => {toggle ? {} : handleKeyUp(note)}}
+                        >
+                            <span className="key-label-note">{note}</span>
+                            <span className="key-label-binding">{Object.keys(keyMap).find(k => keyMap[k] === note).toUpperCase()}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

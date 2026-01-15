@@ -1,3 +1,5 @@
+@import url("styles/ai-integration.css");
+@import url("styles/grid.css");
 @import url("styles/adsr.css");
 @import url("styles/display.css");
 @import url("styles/equalizers.css");
@@ -6,22 +8,53 @@
 *{
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 .App {
-  background: linear-gradient(135deg, #0a0a1a 0%, #121225 100%);
-  min-height: 100vh;
-  padding: 20px;
-  color: #ffffff;
+  background: #121212;
+  height: 100vh;
+  width: 100vw;
+  color: #ffd9da;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-.App h1 {
-  text-align: center;
-  color: #ffd700;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  letter-spacing: 2px;
+.grid-container {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  grid-template-rows: auto auto 1fr;
+  gap: 20px;
+  padding: 10px;
+  width: 1400px;
+  height: fit-content;
+  border-radius: 12px;
+  background-color: #1b2021;
 }
+
+.title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.title h1 {
+    text-align: center;
+    color: #ea638c;
+    text-shadow: 0 0 10px rgba(234, 99, 140, 0.3);
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+}
+
+.ai-integration-styles {
+  padding: 10px;
+  border-radius: 8px;
+  overflow: auto;
+  background-color: #1b2021;
+}
+
 
