@@ -1,17 +1,5 @@
 import { useEffect, useMemo, useCallback } from 'react';
-
-const style = {
-    backgroundColor: "#0f172a",
-    barColor: "rgba(255, 215, 0, 0.3)",
-    nodeColor: "#ffd700",
-    connectorColor: "#ffffff",
-    connectorWidth: 2,
-    nodeRadius: 6,
-    axisColor: "#999",
-    textColor: "#fff",
-    gridColor: "rgba(255,255,255,0.1)"
-};
-
+import { style } from '../static';
 
 function drawAxes(ctx, width, height, isLogarithmic, xRange) {
     const paddingLeft = 45;
@@ -165,18 +153,19 @@ const useCanvasDrawing = (canvasRef, { wasmModule, width, height, nodes, xRange,
         const logXRange = { min: Math.log(xRange[0]), max: Math.log(xRange[1]), range: Math.log(xRange[1]) - Math.log(xRange[0]) };
 
         if (freqs && freqs.length > 0) {
-            context.strokeStyle = style.barColor;
-            context.lineWidth = 1;
-            context.beginPath();
+            context.fillStyle = style.barColor;
+            const paddingLeft = 45;
+            const paddingBottom = 45;
+            const canvasHeight = height - paddingBottom;
+            const canvasWidth = width - paddingLeft - 20;
 
             freqs.forEach(([freq, amp]) => {
-                const canvasX = freq <= 0 ? 0 : ((Math.log(freq) - logXRange.min) / logXRange.range) * width;
-                const barHeight = amp * height;
-                if (canvasX >= 0 && canvasX <= width) {
-                    context.lineTo(canvasX, height - barHeight);
+                const canvasX = freq <= 0 ? 0 : ((Math.log(freq) - logXRange.min) / logXRange.range) * canvasWidth + paddingLeft;
+                const barHeight = amp * canvasHeight;
+                if (canvasX >= paddingLeft && canvasX <= width) {
+                    context.fillRect(canvasX - 1, height - paddingBottom - barHeight, 2, barHeight);
                 }
             });
-            context.stroke();
         }
 
         if (envelopePath) {
@@ -213,5 +202,6 @@ const useCanvasDrawing = (canvasRef, { wasmModule, width, height, nodes, xRange,
         };
     }, [draw, width, height, canvasRef]);
 };
+
 
 export default useCanvasDrawing;

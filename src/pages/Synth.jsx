@@ -126,7 +126,6 @@ function Synth() {
                     height={displayHeight}
                     freqs={rawwave}
                     wasmModule={wasmModule}
-                    className="equalizers"
                 />
             </div>
         </div>
