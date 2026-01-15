@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Display from './Display';
 
 /**
@@ -8,9 +8,10 @@ import Display from './Display';
  * @param {{
  *   wasmModule: any,
  *   width: number,
- *   height: number}}
+ *   height: number,
+ *   setEq: (eq: { nodes: any[], curves: number[] }) => void}}
  */
-function EQ({ wasmModule, width, height, freqs: liveFreqs }) {
+function EQ({ wasmModule, width, height, freqs: liveFreqs, setEq }) {
     const xRange = [20, 20000];
 
     // Initialize nodes and curves for the EQ

@@ -102,6 +102,8 @@
   border-color: #4a5568;
 }
 
+.key.black { background: black; color: white; }
+
 .key.active {
   background: linear-gradient(to bottom, #ffd700 0%, #f59e0b 100%);
   border-color: #ffed4e;

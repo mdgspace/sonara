@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import useCanvasDrawing from '../hooks/useCanvasDrawing';
 import useCanvasInteraction from '../hooks/useCanvasInteraction';
-import { style } from '../constants/theme';
+import { style } from '../static';
 
 
 function Display(props) {

@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Sonara from './pages/Sonara';
+import Synth from './pages/Synth.jsx';
 import './App.css';
 
 function App() {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<Sonara />} />
+                <Route path="/" element={<Synth />} />
             </Routes>
         </Router>
     );

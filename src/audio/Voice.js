@@ -20,7 +20,7 @@ export class Voice {
 
     _createSource() {
         const sampleRate = 44100;
-        const duration = 1.0; // 1-second buffer, which will be looped
+        const duration = 1;
 
         // Convert JS array of pairs to WASM Vector of Vectors
         const freqAmpPairs = new this.wasmModule.VectorVectorDouble();
