@@ -3,8 +3,9 @@ import { style } from '../static';
 
 function drawAxes(ctx, width, height, isLogarithmic, xRange) {
     const paddingLeft = 45;
-    const paddingBottom = 45; //
+    const paddingBottom = 45;
     const paddingTop = 10;
+    const paddingRight = 20;
 
     ctx.save();
     ctx.strokeStyle = style.axisColor;
@@ -17,7 +18,7 @@ function drawAxes(ctx, width, height, isLogarithmic, xRange) {
     // ---- Axis lines ----
     ctx.beginPath();
     ctx.moveTo(paddingLeft, height - paddingBottom);
-    ctx.lineTo(width - 10, height - paddingBottom);
+    ctx.lineTo(width - paddingRight, height - paddingBottom);
     ctx.stroke();
 
     ctx.beginPath();
@@ -33,6 +34,8 @@ function drawAxes(ctx, width, height, isLogarithmic, xRange) {
     ctx.rotate(-Math.PI / 2);
     ctx.fillText('Amplitude', 0, 0);
     ctx.restore();
+
+    const drawWidth = width - paddingLeft - paddingRight;
 
     // ---- Frequency (Hz) ----
     let xTicks;
@@ -59,9 +62,9 @@ function drawAxes(ctx, width, height, isLogarithmic, xRange) {
         const x = isLogarithmic
             ? ((Math.log(tick) - Math.log(xRange[0])) /
                 (Math.log(xRange[1]) - Math.log(xRange[0]))) *
-                (width - paddingLeft - 20) + paddingLeft
+                drawWidth + paddingLeft
             : ((tick - xRange[0]) / (xRange[1] - xRange[0])) *
-                (width - paddingLeft - 20) + paddingLeft;
+                drawWidth + paddingLeft;
 
         ctx.beginPath();
         ctx.moveTo(x, height - paddingBottom);
@@ -73,10 +76,10 @@ function drawAxes(ctx, width, height, isLogarithmic, xRange) {
     });
 
     // ---- Y-axis ticks  ----
-    const yTicks = [-12, -6, 0, 6, 12]; // This seems to be a placeholder, as nodes are 0-1.
+    const yTicks = [0, 0.25, 0.5, 0.75, 1]; // Amplitude values
+    const drawHeight = height - paddingBottom - paddingTop;
     const toCanvasY = val => {
-        const norm = (val + 12) / 24; // [-12..12] → [0..1]
-        return height - paddingBottom - norm * (height - paddingBottom - paddingTop);
+        return height - paddingBottom - val * drawHeight;
     };
 
     ctx.textAlign = 'right';
@@ -89,12 +92,14 @@ function drawAxes(ctx, width, height, isLogarithmic, xRange) {
         ctx.lineTo(paddingLeft, y);
         ctx.stroke();
         // Label
-        ctx.fillText(`${val}`, paddingLeft - 8, y);
+        const dB = (val - 0.75) * 48;
+        const labelText = `${dB > 0 ? '+' : ''}${dB} dB`;
+        ctx.fillText(labelText, paddingLeft - 8, y);
         // Grid line
         ctx.strokeStyle = style.gridColor;
         ctx.beginPath();
         ctx.moveTo(paddingLeft, y);
-        ctx.lineTo(width - 10, y);
+        ctx.lineTo(width - paddingRight, y);
         ctx.stroke();
     });
 
@@ -107,11 +112,18 @@ const useCanvasDrawing = (canvasRef, { wasmModule, width, height, nodes, xRange,
             return null;
         }
 
+        const paddingLeft = 60;
+        const paddingRight = 20;
+        const paddingTop = 10;
+        const paddingBottom = 45;
+        const drawWidth = width - paddingLeft - paddingRight;
+        const drawHeight = height - paddingBottom - paddingTop;
+
         const getCanvasPoint = (node, logX, xRangeLinear) => {
             const canvasX = isLogarithmic
-                ? node.x <= 0 ? 0 : ((Math.log(node.x) - logX.min) / logX.range) * width
-                : ((node.x - xRange[0]) / xRangeLinear) * width;
-            const canvasY = (1 - node.y) * height;
+                ? node.x <= 0 ? paddingLeft : ((Math.log(node.x) - logX.min) / logX.range) * drawWidth + paddingLeft
+                : ((node.x - xRange[0]) / xRangeLinear) * drawWidth + paddingLeft;
+            const canvasY = height - paddingBottom - node.y * drawHeight;
             return { x: canvasX, y: canvasY };
         };
 
@@ -129,15 +141,15 @@ const useCanvasDrawing = (canvasRef, { wasmModule, width, height, nodes, xRange,
             const logStartX = Math.log(startNode.x);
             const logXNodeRange = Math.log(endNode.x) - logStartX;
 
-
             const segments = 20;
             for (let j = 1; j <= segments; j++) {
                 const t = j / segments;
                 const logCurrentX = logStartX + t * logXNodeRange;
-                const currentX = ((logCurrentX - logX.min) / logX.range) * width;
+                const currentX = ((logCurrentX - logX.min) / logX.range) * drawWidth + paddingLeft;
                 const linearY = startNode.y + t * (endNode.y - startNode.y);
                 const curveOffset = wasmModule.applyShape(t, shape);
-                const currentY = (1 - (linearY - curveOffset * t * (1 - t))) * height;
+                const nodeY = linearY - curveOffset * t * (1 - t);
+                const currentY = height - paddingBottom - nodeY * drawHeight;
                 path.lineTo(currentX, currentY);
             }
         }
@@ -152,17 +164,20 @@ const useCanvasDrawing = (canvasRef, { wasmModule, width, height, nodes, xRange,
 
         const logXRange = { min: Math.log(xRange[0]), max: Math.log(xRange[1]), range: Math.log(xRange[1]) - Math.log(xRange[0]) };
 
+        const paddingLeft = 60;
+        const paddingRight = 20;
+        const paddingTop = 10;
+        const paddingBottom = 45;
+        const drawWidth = width - paddingLeft - paddingRight;
+        const drawHeight = height - paddingBottom - paddingTop;
+
         if (freqs && freqs.length > 0) {
             context.fillStyle = style.barColor;
-            const paddingLeft = 45;
-            const paddingBottom = 45;
-            const canvasHeight = height - paddingBottom;
-            const canvasWidth = width - paddingLeft - 20;
 
             freqs.forEach(([freq, amp]) => {
-                const canvasX = freq <= 0 ? 0 : ((Math.log(freq) - logXRange.min) / logXRange.range) * canvasWidth + paddingLeft;
-                const barHeight = amp * canvasHeight;
-                if (canvasX >= paddingLeft && canvasX <= width) {
+                const canvasX = freq <= 0 ? paddingLeft : ((Math.log(freq) - logXRange.min) / logXRange.range) * drawWidth + paddingLeft;
+                const barHeight = amp * drawHeight;
+                if (canvasX >= paddingLeft && canvasX <= width - paddingRight) {
                     context.fillRect(canvasX - 1, height - paddingBottom - barHeight, 2, barHeight);
                 }
             });
@@ -174,13 +189,24 @@ const useCanvasDrawing = (canvasRef, { wasmModule, width, height, nodes, xRange,
             context.stroke(envelopePath);
         }
 
-        context.fillStyle = style.nodeColor;
         nodes.forEach(node => {
-            const x = node.x <= 0 ? 0 : ((Math.log(node.x) - logXRange.min) / logXRange.range) * width;
-            const y = (1 - node.y) * height;
+            const x = node.x <= 0 ? paddingLeft : ((Math.log(node.x) - logXRange.min) / logXRange.range) * drawWidth + paddingLeft;
+            const y = height - paddingBottom - node.y * drawHeight;
+            
+            // Draw node
+            context.fillStyle = style.nodeColor;
             context.beginPath();
             context.arc(x, y, style.nodeRadius, 0, 2 * Math.PI);
             context.fill();
+
+            // Draw frequency value
+            context.fillStyle = style.textColor || '#ffffff';
+            context.font = '10px sans-serif';
+            context.textAlign = 'center';
+            const freqVal = Math.round(node.x);
+            const label = freqVal >= 1000 ? `${(freqVal / 1000).toFixed(1)}k` : `${freqVal}`;
+            const textY = y < paddingTop + 15 ? y + 15 : y - 12;
+            context.fillText(label, x, textY);
         });
     }, [width, height, isLogarithmic, xRange, freqs, nodes, envelopePath]);
 
@@ -202,6 +228,5 @@ const useCanvasDrawing = (canvasRef, { wasmModule, width, height, nodes, xRange,
         };
     }, [draw, width, height, canvasRef]);
 };
-
 
 export default useCanvasDrawing;

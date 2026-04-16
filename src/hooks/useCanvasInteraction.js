@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 const style = {
     nodeRadius: 6,
@@ -8,7 +8,12 @@ const style = {
 
 const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, onNodesChange, onCurvesChange, isLogarithmic }) => {
     const [draggingNodeIndex, setDraggingNodeIndex] = useState(null);
-    const logXRange = [Math.log(xRange[0]), Math.log(xRange[1])];
+    const logXRange = useMemo(() => [Math.log(xRange[0]), Math.log(xRange[1])], [xRange]);
+
+    const paddingLeft = 60;
+    const paddingRight = 20;
+    const paddingTop = 10;
+    const paddingBottom = 45;
 
     const getMousePos = useCallback((e) => {
         const rect = canvasRef.current.getBoundingClientRect();
@@ -19,13 +24,15 @@ const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, onNodes
     }, [canvasRef]);
 
     const getCanvasPoint = useCallback((node) => {
+        const drawWidth = width - paddingLeft - paddingRight;
+        const drawHeight = height - paddingBottom - paddingTop;
         let canvasX;
         if (isLogarithmic) {
-            canvasX = ((Math.log(node.x) - logXRange[0]) / (logXRange[1] - logXRange[0])) * width;
+            canvasX = ((Math.log(node.x) - logXRange[0]) / (logXRange[1] - logXRange[0])) * drawWidth + paddingLeft;
         } else {
-            canvasX = ((node.x - xRange[0]) / (xRange[1] - xRange[0])) * width;
+            canvasX = ((node.x - xRange[0]) / (xRange[1] - xRange[0])) * drawWidth + paddingLeft;
         }
-        const canvasY = (1 - node.y) * height;
+        const canvasY = height - paddingBottom - node.y * drawHeight;
         return { x: canvasX, y: canvasY };
     }, [width, height, xRange, isLogarithmic, logXRange]);
 
@@ -45,8 +52,11 @@ const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, onNodes
         if (draggingNodeIndex === null) return;
 
         const mousePos = getMousePos(e);
-        const clampedCanvasY = Math.max(0, Math.min(height, mousePos.y));
-        const normalizedY = 1 - (clampedCanvasY / height);
+        const drawWidth = width - paddingLeft - paddingRight;
+        const drawHeight = height - paddingBottom - paddingTop;
+
+        const clampedCanvasY = Math.max(paddingTop, Math.min(height - paddingBottom, mousePos.y));
+        const normalizedY = (height - paddingBottom - clampedCanvasY) / drawHeight;
 
         let newNodeX;
         const isFirstNode = draggingNodeIndex === 0;
@@ -59,10 +69,10 @@ const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, onNodes
             const rightNeighborX = nodes[draggingNodeIndex + 1].x;
             let rawNodeX;
             if (isLogarithmic) {
-                const logX = (mousePos.x / width) * (logXRange[1] - logXRange[0]) + logXRange[0];
+                const logX = ((mousePos.x - paddingLeft) / drawWidth) * (logXRange[1] - logXRange[0]) + logXRange[0];
                 rawNodeX = Math.exp(logX);
             } else {
-                rawNodeX = (mousePos.x / width) * (xRange[1] - xRange[0]) + xRange[0];
+                rawNodeX = ((mousePos.x - paddingLeft) / drawWidth) * (xRange[1] - xRange[0]) + xRange[0];
             }
             newNodeX = Math.max(leftNeighborX, Math.min(rawNodeX, rightNeighborX));
         }
@@ -80,12 +90,13 @@ const useCanvasInteraction = (canvasRef, { width, height, nodes, xRange, onNodes
     const handleWheel = useCallback((e) => {
         e.preventDefault();
         const mousePos = getMousePos(e);
+        const drawWidth = width - paddingLeft - paddingRight;
         let logicalX;
         if (isLogarithmic) {
-            const logX = (mousePos.x / width) * (logXRange[1] - logXRange[0]) + logXRange[0];
+            const logX = ((mousePos.x - paddingLeft) / drawWidth) * (logXRange[1] - logXRange[0]) + logXRange[0];
             logicalX = Math.exp(logX);
         } else {
-            logicalX = (mousePos.x / width) * (xRange[1] - xRange[0]) + xRange[0];
+            logicalX = ((mousePos.x - paddingLeft) / drawWidth) * (xRange[1] - xRange[0]) + xRange[0];
         }
         const targetConnectorIndex = nodes.findIndex((node, i) =>
             nodes[i + 1] && logicalX > node.x && logicalX < nodes[i + 1].x
