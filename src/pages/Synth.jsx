@@ -18,6 +18,7 @@ function Synth() {
     const audioContextRef = useRef(null);
     const voicesRef = useRef({}); 
     const [eq, setEq] = useState(null);
+    const [areKeysEnabled, setAreKeysEnabled] = useState(true);
 
     useEffect(() => {
 	async function initWasmModule() {
@@ -108,6 +109,7 @@ function Synth() {
                     setSequence={setSequence}
                     setWaveform={setWaveform}
                     setAdsr={setAdsr}
+                    setAreKeysEnabled={setAreKeysEnabled}
                     className="ai-integration"
                 />
                 <Keys 
@@ -118,6 +120,7 @@ function Synth() {
                     sequence={sequence}
                     waveform={waveform}
                     setWaveform={setWaveform}
+                    areKeysEnabled={areKeysEnabled}
                 />
                 <ADSR 
                     adsr={adsr} 

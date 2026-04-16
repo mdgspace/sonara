@@ -27,8 +27,9 @@ You are a music-synthesis assistant. OUTPUT ONLY valid JSON that EXACTLY matches
     }
   },
   "events": [
-    { "key": "C"|"D"|"E"|"F"|"G"|"A"|"B", "time": number}
+    { "key": "C"|"D"|"E"|"F"|"G"|"A"|"B", "time": number, "duration": number }
     // "time" = seconds from start (>=0)
+    // "duration" = seconds (float > 0)
   ]
 }
 
@@ -37,13 +38,14 @@ CONSTRAINTS:
 - Octave must be integer 3..8.
 - wave must be one of: sine, square, sawtooth, triangle.
 - ADSR ranges: attack 0.01-2, decay 0.01-2, sustain 0-100 (percent), release 0.01-5.
-- events[].time in seconds (float >= 0). events[].
+- events[].time in seconds (float >= 0).
+- events[].duration in seconds (float > 0).
 - Output ONLY the JSON object (strict). Do NOT output any explanatory text or fences.
 `;
 };
 
 
-function MusicSequenceGenerator({ setSequence, className, setWaveform, setAdsr }) {
+function MusicSequenceGenerator({ setSequence, className, setWaveform, setAdsr, setAreKeysEnabled }) {
   const updateSequence = (newsequence) => {
     setSequence(newsequence);
     console.log(newsequence)
@@ -134,6 +136,8 @@ function MusicSequenceGenerator({ setSequence, className, setWaveform, setAdsr }
         type="text"
         value={userText}
         onChange={(e) => setUserText(e.target.value)}
+        onFocus={() => setAreKeysEnabled(false)}
+        onBlur={() => setAreKeysEnabled(true)}
         placeholder="Describe the music you want to generate..."
       />
 
@@ -215,6 +219,9 @@ function ValidateMusic(json) {
     }
     if (typeof ev.time !== "number" || ev.time < 0) {
       throw new Error(`Invalid event.time for key ${ev.key}: ${ev.time}. Must be number >= 0.`);
+    }
+    if (typeof ev.duration !== "number" || ev.duration <= 0) {
+      throw new Error(`Invalid event.duration for key ${ev.key}: ${ev.duration}. Must be number > 0.`);
     }
   }
   // --- End Validation ---

@@ -54,7 +54,7 @@ function useSequencePlayer({ events = [], loop = false, onNoteDown, onNoteUp, wa
                 if (onNoteUp) {
                     onNoteUp(ev.key);
                 }
-            }, 200); // Fixed duration for the note
+            }, ev.duration * 1000); // Use duration from event
 
             idxRef.current = idx + 1;
             scheduleNext();
