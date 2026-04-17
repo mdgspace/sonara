@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_KEY
 // IMPORTANT SECURITY NOTE: In a real production application, you should NEVER expose 
@@ -55,9 +55,12 @@ function MusicSequenceGenerator({ setSequence, className, setWaveform, setAdsr, 
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const settings = ["title", "tempo", "octave", "waveform", "attack", "decay", "sustain", "release"];
+  const inputFocusRef = useRef(null);
+
 
   // Function to perform the client-side API call using the Gemini REST API
-  const generateSequence = useCallback(async () => {
+  const generateSequence = useCallback(async (e) => {
+    e.preventDefault();
     if (!userText.trim()) {
       setError("Please enter a music request.");
       return;
@@ -70,6 +73,7 @@ function MusicSequenceGenerator({ setSequence, className, setWaveform, setAdsr, 
     setLoading(true);
     setResult(null);
     setError(null);
+    inputFocusRef.current?.blur();
 
     const prompt = buildPrompt(userText);
 
@@ -132,23 +136,25 @@ function MusicSequenceGenerator({ setSequence, className, setWaveform, setAdsr, 
   return (
     <div className={`ai-integration-styles ${className}`}>
       <h2>AI Music Sequence Generator</h2>
+      <form onSubmit={generateSequence}>
       <input
+        ref={inputFocusRef}
         type="text"
         value={userText}
         onChange={(e) => setUserText(e.target.value)}
-        onFocus={() => setAreKeysEnabled(false)}
-        onBlur={() => setAreKeysEnabled(true)}
+        onFocus={() => {console.log("IN FOCUS!");return setAreKeysEnabled(false)}}
+        onBlur={() => {console.log("OUT OF FOCUS!");return setAreKeysEnabled(true)}}
         placeholder="Describe the music you want to generate..."
       />
 
 
       <button
-        onClick={generateSequence}
+        type = "submit"
         disabled={loading}
       >
         {loading ? 'Generating...' : 'Generate Music Sequence'}
       </button>
-
+      </form>
 
       {error && (
         <blockquote>

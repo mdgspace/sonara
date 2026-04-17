@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { noteFrequencies, keyMap, notes, waveimages } from '../static';
 import useSequencePlayer from '../hooks/useSequencePlayer';
 
-function Keys({ onNoteDown, onNoteUp, wasmModule, event=[], sequence, waveform, setWaveform }) {
+function Keys({ onNoteDown, onNoteUp, wasmModule, event=[], sequence, waveform, setWaveform, areKeysEnabled }) {
     const [octave, setOctave] = useState(4);
     const [activeKeys, setActiveKeys] = useState(new Set());
 
@@ -53,6 +53,7 @@ function Keys({ onNoteDown, onNoteUp, wasmModule, event=[], sequence, waveform, 
     }, [onNoteUp]);
 
     useEffect(() => {
+        if (!areKeysEnabled) return;
         const keydownListener = (e) => {
             const note = keyMap[e.key.toLowerCase()];
             if (note && !activeKeys.has(note)) {
