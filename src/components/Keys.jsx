@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { noteFrequencies, keyMap, notes, waveimages } from '../static';
 import useSequencePlayer from '../hooks/useSequencePlayer';
 
-function Keys({ onNoteDown, onNoteUp, wasmModule, event=[], sequence, waveform, setWaveform, areKeysEnabled }) {
+function Keys({ onNoteDown, onNoteUp, wasmModule, event = [], waveform, setWaveform, areKeysEnabled, audioContext }) {
     const [octave, setOctave] = useState(4);
     const [activeKeys, setActiveKeys] = useState(new Set());
 
@@ -15,6 +15,7 @@ function Keys({ onNoteDown, onNoteUp, wasmModule, event=[], sequence, waveform, 
         waveform,
         octave,
         noteFrequencies,
+        audioContext,
     });
 
     const handlePlay = () => {
@@ -27,6 +28,10 @@ function Keys({ onNoteDown, onNoteUp, wasmModule, event=[], sequence, waveform, 
     
     // Handle key press to play a note
     const handleKeyDown = useCallback((note) => {
+        if (!wasmModule) {
+            return;
+        }
+
         const baseFreq = noteFrequencies[note] * Math.pow(2, octave - 4);
         const wasmWave = wasmModule.createWaveform(waveform, baseFreq);
 
@@ -77,7 +82,7 @@ function Keys({ onNoteDown, onNoteUp, wasmModule, event=[], sequence, waveform, 
             window.removeEventListener('keydown', keydownListener);
             window.removeEventListener('keyup', keyupListener);
         };
-    }, [activeKeys, handleKeyDown, handleKeyUp]);
+    }, [activeKeys, areKeysEnabled, handleKeyDown, handleKeyUp]);
 
     return (
         <div className="keys-container">
