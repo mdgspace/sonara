@@ -43,7 +43,7 @@ function Synth() {
     }, []);
 
 
-    const handleNoteDown = async (note, rawWave) => {
+    const handleNoteDown = async (note, rawWave, scheduledTime = audioContextRef.current?.currentTime ?? 0) => {
         if (!wasmModule || !audioContextRef.current) return;
 
         if (audioContextRef.current.state === 'suspended') {
@@ -51,7 +51,7 @@ function Synth() {
         }
 
         if (voicesRef.current[note]) {
-            voicesRef.current[note].stop();
+            voicesRef.current[note].stop(scheduledTime);
         }
 
         let freq = rawWave;
@@ -89,14 +89,25 @@ function Synth() {
 
         const voice = new Voice(audioContextRef.current, wasmModule, freq, adsr);
         voicesRef.current[note] = voice;
-        voice.start();
+        voice.start(scheduledTime);
     };
 
-    const handleNoteUp = (note) => {
-        if (voicesRef.current[note]) {
-            voicesRef.current[note].stop();
-            delete voicesRef.current[note];
-        }
+    const handleNoteUp = (note, scheduledTime = audioContextRef.current?.currentTime ?? 0) => {
+        const voice = voicesRef.current[note];
+        if (!voice || !audioContextRef.current) return;
+
+        voice.stop(scheduledTime);
+
+        const cleanupDelayMs = Math.max(
+            0,
+            (scheduledTime - audioContextRef.current.currentTime + adsr.release + 0.1) * 1000,
+        );
+
+        window.setTimeout(() => {
+            if (voicesRef.current[note] === voice) {
+                delete voicesRef.current[note];
+            }
+        }, cleanupDelayMs);
     };
 
     return (
@@ -116,6 +127,7 @@ function Synth() {
                     onNoteDown={handleNoteDown} 
                     onNoteUp={handleNoteUp} 
                     wasmModule={wasmModule}
+                    audioContext={audioContextRef.current}
                     event={memoEvents} 
                     sequence={sequence}
                     waveform={waveform}
